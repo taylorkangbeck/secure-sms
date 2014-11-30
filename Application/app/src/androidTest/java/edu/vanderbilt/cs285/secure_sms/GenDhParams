@@ -17,25 +17,32 @@ public class genDhParams {
 	 * 
 	 */
 	public genDhParams() {
+		
 		// TODO Auto-generated constructor stub
+		
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+	
 		// TODO Auto-generated method stub
+		
 		if(args.length!=1) {
 			System.out.println("Usage: java genDhParams <keysize>");
 		}
 		else{
 			try {
 				int keySize = Integer.parseInt(args[0]); 
+				
 				// Create the parameter generator for a 1024-bit DH key pair
+				
 				AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
 				paramGen.init(keySize);
 
 				// Generate the parameters
+				
 				AlgorithmParameters params = paramGen.generateParameters();
 				DHParameterSpec dhSpec
 				= (DHParameterSpec)params.getParameterSpec(DHParameterSpec.class);
