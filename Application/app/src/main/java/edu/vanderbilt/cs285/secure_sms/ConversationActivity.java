@@ -2,7 +2,6 @@ package edu.vanderbilt.cs285.secure_sms;
 
 import java.util.Locale;
 
-import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -11,17 +10,13 @@ import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
+public class ConversationActivity extends FragmentActivity implements ActionBar.TabListener {
+//represents single conversation with another person, with tabs for insecure and secure messaging
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -41,7 +36,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_conversations_list);
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
