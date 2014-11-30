@@ -118,7 +118,7 @@ public class genBDhKey {
 	        PublicKey publicKey = keypair.getPublic();
 	    
 	        // Send the public key bytes to the other party
-	        byte[] bobPublicKeyBytes = publicKey.getEncoded();
+	        byte[] bPublicKeyBytes = publicKey.getEncoded();
 	        
 	        System.out.println("Key length:"+bPublicKeyBytes.length);
 	        
@@ -133,9 +133,9 @@ public class genBDhKey {
             }
 	        
             // Send the public key to B and receive B's public key
-            byte[] alicePublicKeyBytes = getPublicKey(port, inBuffer, outBuffer);
+            byte[] aPublicKeyBytes = getPublicKey(port, inBuffer, outBuffer);
             
-            System.out.println("alicePublicKey:\n"+asHex(alicePublicKeyBytes));
+            System.out.println("aPublicKey:\n"+asHex(aPublicKeyBytes));
 
 	        // Convert the public key bytes into a PublicKey object
             System.out.println("A's SecretKey generated and stored");
