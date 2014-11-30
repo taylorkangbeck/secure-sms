@@ -150,7 +150,7 @@ public class genADhKey {
             // Send the public key to B and receive B's public key
             byte[] bPublicKeyBytes = send(_bIP, _echoBPort, outBuffer, valuesInStr.getBytes());
             */
-	        byte[] keyBuffer = new byte[alicePublicKeyBytes.length];
+	        byte[] keyBuffer = new byte[aPublicKeyBytes.length];
             DatagramPacket expectPacket = new DatagramPacket(keyBuffer, keyBuffer.length);
             socket.receive(expectPacket);
             
@@ -159,7 +159,7 @@ public class genADhKey {
             System.out.println("bPublicKey:\n"+asHex(bPublicKeyBytes));
 
 	        // Convert the public key bytes into a PublicKey object
-	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bobPublicKeyBytes);
+	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bPublicKeyBytes);
 	        KeyFactory keyFact = KeyFactory.getInstance("DH");
 	        PublicKey bobPublicKey = keyFact.generatePublic(x509KeySpec);
 	        System.out.println("A's SecretKey generated and stored");
@@ -171,7 +171,7 @@ public class genADhKey {
 	        
 	        // Specify the type of key to generate;
 	        // see e458 Listing All Available Symmetric Key Generators
-	        String algorithm = "DES";
+	        String algorithm = "AES";
 	    
 	        // Generate the secret key
 	        SecretKey secretKey = ka.generateSecret(algorithm);
