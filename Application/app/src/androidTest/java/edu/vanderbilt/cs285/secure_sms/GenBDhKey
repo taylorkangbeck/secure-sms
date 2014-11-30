@@ -1,0 +1,169 @@
+/**
+ *  Generating a Secret Key Using the Diffie-Hellman Key
+ *	Agreement Algorithm - B's side
+ */
+
+package edu.vanderbilt.cs285.secure_sms;
+
+import java.io.*;
+import java.net.*;
+import java.math.BigInteger;
+
+import java.security.AlgorithmParameterGenerator;
+import java.security.AlgorithmParameters;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.InvalidParameterSpecException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+
+public class genBDhKey {
+
+	// Returns a comma-separated string of 3 values.
+    // The first number is the prime modulus P.
+    // The second number is the base generator G.
+    // The third number is bit size of the random exponent L.
+    public static String genDhParams() {
+        try {
+        
+            // Create the parameter generator for a 1024-bit DH key pair
+            AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
+            paramGen.init(1024);
+    
+            // Generate the parameters
+            AlgorithmParameters params = paramGen.generateParameters();
+            DHParameterSpec dhSpec
+                = (DHParameterSpec)params.getParameterSpec(DHParameterSpec.class);
+    
+            // Return the three values in a string
+            return ""+dhSpec.getP()+","+dhSpec.getG()+","+dhSpec.getL();
+        } catch (NoSuchAlgorithmException e) {
+        } catch (InvalidParameterSpecException e) {
+        }
+        return null;
+    }
+    
+    // Send the public key to B and receive B's public key
+    public static byte[] getPublicKey(int port, byte[] inbuf, byte[] outbuf) {
+        try {
+            // Receive
+            DatagramSocket socket = new DatagramSocket(port);
+            DatagramPacket arrivalPacket = new DatagramPacket(inbuf, inbuf.length);
+            socket.receive(arrivalPacket);
+            
+            System.out.println("A's public key received");
+        	
+        	// Send
+        	DatagramPacket reply = new DatagramPacket(outbuf, outbuf.length, arrivalPacket.getAddress(), arrivalPacket.getPort());
+            socket.send(reply);
+            
+            System.out.println("B's public key send");
+            
+            return arrivalPacket.getData();
+        } catch (SocketException e) {
+        } catch (IOException e) {
+        }
+        return null;
+    }
+    
+	final private static String asHex (byte[] buf)
+	{
+		StringBuffer strbuf = new StringBuffer(buf.length * 2);
+		int i;
+
+		for (i = 0; i < buf.length; i++)
+		{
+			if (((int) buf[i] & 0xff) < 0x10)
+				strbuf.append("0");
+
+			strbuf.append(Long.toString((int) buf[i] & 0xff, 16));
+		}
+		return strbuf.toString();
+	}
+    
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		
+        int port = 3110;               /* Echo B's port */
+        
+	    // Retrieve the prime, base, and private value for generating the key pair.
+	    // If the values are encoded as in
+	    // e470 Generating a Parameter Set for the Diffie-Hellman Key Agreement Algorithm,
+	    // the following code will extract the values
+		String valuesInStr = genDhParams();
+	    String[] values = valuesInStr.split(",");
+	    BigInteger p = new BigInteger(values[0]);
+	    BigInteger g = new BigInteger(values[1]);
+	    int l = Integer.parseInt(values[2]);
+	    try {     
+	    
+	        // Use the values to generate a key pair
+	        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+	        DHParameterSpec dhSpec = new DHParameterSpec(p, g, l);
+	        keyGen.initialize(dhSpec);
+	        KeyPair keypair = keyGen.generateKeyPair();
+	    
+	        // Get the generated public and private keys
+	        PrivateKey privateKey = keypair.getPrivate();
+	        PublicKey publicKey = keypair.getPublic();
+	    
+	        // Send the public key bytes to the other party
+	        byte[] bobPublicKeyBytes = publicKey.getEncoded();
+	        
+	        System.out.println("Key length:"+bPublicKeyBytes.length);
+	        
+	        System.out.println("bPublicKey:\n"+asHex(bPublicKeyBytes));
+	        
+	        byte[] outBuffer = new byte[bPublicKeyBytes.length];
+	        byte[] inBuffer = new byte[bPublicKeyBytes.length];
+            // write the bytes into the byte array in order to maintain byte array length
+            for (int i =0; i < bPublicKeyBytes.length; i++)
+            {
+                outBuffer[i] = bPublicKeyBytes[i];
+            }
+	        
+            // Send the public key to B and receive B's public key
+            byte[] alicePublicKeyBytes = getPublicKey(port, inBuffer, outBuffer);
+            
+            System.out.println("alicePublicKey:\n"+asHex(alicePublicKeyBytes));
+
+	        // Convert the public key bytes into a PublicKey object
+            System.out.println("A's SecretKey generated and stored");
+	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(alicePublicKeyBytes);
+	        KeyFactory keyFact = KeyFactory.getInstance("DH");
+	        PublicKey alicePublicKey = keyFact.generatePublic(x509KeySpec);
+	        
+	        // Prepare to generate the secret key with the private key and public key of the other party
+	        KeyAgreement ka = KeyAgreement.getInstance("DH");
+	        ka.init(privateKey);
+	        ka.doPhase(alicePublicKey, true);
+	        
+	        // Specify the type of key to generate;
+	        // see e458 Listing All Available Symmetric Key Generators
+	        String algorithm = "AES";
+	    
+	        // Generate the secret key
+	        SecretKey secretKey = ka.generateSecret(algorithm);
+	        
+	        System.out.println("B's SecretKey generated:"+secretKey);
+	    
+	        // Use the secret key to encrypt/decrypt data;
+	        // see e462 Encrypting a String with AES
+	    } catch (java.security.InvalidKeyException e) {
+	    } catch (java.security.spec.InvalidKeySpecException e) {
+	    } catch (java.security.InvalidAlgorithmParameterException e) {
+	    } catch (java.security.NoSuchAlgorithmException e) {
+	    }
+	}
+
+}
