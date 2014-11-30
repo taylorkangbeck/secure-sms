@@ -1,0 +1,63 @@
+import java.math.BigInteger;
+
+public class RSA {
+    
+    public static String RSAES_OAEP_ENCRYPT(BigInteger n,BigInteger e,String M,String L){
+        int mLen=M.length()/2;
+        int hLen=20;
+        int k=(int)((n.bitLength()+7)/8);
+        if(mLen>k-2*hLen-2)return "Message too long";
+        else{
+            String EM=Codage.EME_OAEP_Coding(M,L,k,mLen);   
+            BigInteger m=Primitives.OS2IP(EM);
+            BigInteger c = Primitives.RSAEP (n,e,m);
+            String C = Primitives.I2OSP (c, k);
+            return C;
+        }   
+    }
+    
+    public static String RSAES_OAEP_DECRYPT (BigInteger n,BigInteger d,String C,String L){
+        int cLen=C.length()/2;
+        int hLen=20;
+        int k=(int)((n.bitLength()+7)/8);
+        if(cLen!=k ||(k<2*hLen+2)){
+            return "Decryption Error";
+        }else{
+            BigInteger c = Primitives.OS2IP (C);
+            BigInteger m = Primitives.RSADP (n,d, c);
+            String EM = Primitives.I2OSP (m, k);
+            String M=Codage.EME_OAEP_Decoding(EM,L,k);
+            return M;
+        }
+    }
+    
+    public static String RSASSA_PSS_SIGN (BigInteger n,BigInteger d,String M,int sLen){
+       int modBits=n.bitLength();
+       int k=(modBits+7)/8;
+       String EM=Codage.EMSA_PSS_ENCODE(M, modBits-1, sLen);
+       BigInteger m = Primitives.OS2IP(EM);
+       BigInteger s = Primitives.RSASP1 (n,d, m);
+       String S = Primitives.I2OSP (s, k);
+       return S;
+    }
+    
+    public static String RSASSA_PSS_VERIFY (BigInteger n, BigInteger e, String M, String S,int sLen){
+       int modBits=n.bitLength();
+       int k=(modBits+7)/8;
+       int tmp=S.length()/2;
+       if(tmp!=k)return "Signature non valide";
+       else{
+           BigInteger s = Primitives.OS2IP (S);
+           BigInteger m = Primitives.RSAVP1 (n, e, s);
+           if(m==null)return "Signature non valide";
+           else{
+               int emLen=(modBits+6)/8;
+               String EM = Primitives.I2OSP (m, emLen);
+               String Result = Codage.EMSA_PSS_VERIFY(M, EM, modBits-1, sLen);
+               if(Result.equals("consistent"))return "Signature valid";
+               else return "Signature non valid!!!!!!!!!!!!!!!!!!!!!";
+           }
+       }
+    }
+
+}
