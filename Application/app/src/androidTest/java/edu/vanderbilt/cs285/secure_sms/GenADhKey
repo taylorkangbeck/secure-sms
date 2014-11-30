@@ -1,0 +1,192 @@
+/**
+ * Generating a Secret Key Using the Diffie-Hellman Key
+ *	Agreement Algorithm - A's side
+ */
+ 
+package edu.vanderbilt.cs285.secure_sms;
+
+import java.io.*;
+import java.net.*;
+import java.math.BigInteger;
+
+import java.security.AlgorithmParameterGenerator;
+import java.security.AlgorithmParameters;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.InvalidParameterSpecException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+
+public class genADhKey {
+
+	// Returns a comma-separated string of 3 values.
+    // The first number is the prime modulus P.
+    // The second number is the base generator G.
+    // The third number is bit size of the random exponent L.
+    public static String genDhParams() {
+        try {
+        
+            // Create the parameter generator for a 1024-bit DH key pair
+            AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
+            paramGen.init(1024);
+    
+            // Generate the parameters
+            AlgorithmParameters params = paramGen.generateParameters();
+            DHParameterSpec dhSpec
+                = (DHParameterSpec)params.getParameterSpec(DHParameterSpec.class);
+    
+            // Return the three values in a string
+            return ""+dhSpec.getP()+","+dhSpec.getG()+","+dhSpec.getL();
+        } catch (NoSuchAlgorithmException e) {
+        } catch (InvalidParameterSpecException e) {
+        }
+        return null;
+    }
+    
+    // Send the public key to B and receive B's public key
+    public static byte[] send(String servIP, int port, byte[] keyBuffer, byte[] paraBuffer) {
+        try {
+            // Send
+        	DatagramPacket paraPacket = new DatagramPacket(paraBuffer, paraBuffer.length, InetAddress.getByName(servIP), port);
+            DatagramSocket socket = new DatagramSocket();
+            socket.send(paraPacket);
+            
+            System.out.println("A's DH parameters send");
+            
+        	DatagramPacket keyPacket = new DatagramPacket(keyBuffer, keyBuffer.length, InetAddress.getByName(servIP), port);
+        	socket.send(keyPacket);
+            
+            System.out.println("A's public key send");
+            
+            // Receive
+            DatagramPacket expectPacket = new DatagramPacket(keyBuffer, keyBuffer.length);
+            socket.receive(expectPacket);
+            
+            System.out.println("B's public key received");
+            
+            return expectPacket.getData();
+        } catch (SocketException e) {
+        } catch (IOException e) {
+        }
+        return null;
+    }
+    
+	final private static String asHex (byte[] buf)
+	{
+		StringBuffer strbuf = new StringBuffer(buf.length * 2);
+		int i;
+
+		for (i = 0; i < buf.length; i++)
+		{
+			if (((int) buf[i] & 0xff) < 0x10)
+				strbuf.append("0");
+
+			strbuf.append(Long.toString((int) buf[i] & 0xff, 16));
+		}
+		return strbuf.toString();
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+	
+		// TODO Auto-generated method stub
+		
+        int _bPort = 3110;               /* Echo B's port */
+        String _bIP = "127.0.0.1";                  /* IP address of B */
+		
+	    // Retrieve the prime, base, and private value for generating the key pair.
+	    // If the values are encoded as in
+	    // e470 Generating a Parameter Set for the Diffie-Hellman Key Agreement Algorithm,
+	    // the following code will extract the values
+		String valuesInStr = genDhParams();
+	    String[] values = valuesInStr.split(",");
+	    BigInteger p = new BigInteger(values[0]);
+	    BigInteger g = new BigInteger(values[1]);
+	    int l = Integer.parseInt(values[2]);
+	    	    
+	    try {
+	    
+	        // Use the values to generate a key pair
+	        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+	        DHParameterSpec dhSpec = new DHParameterSpec(p, g, l);
+	        keyGen.initialize(dhSpec);
+	        KeyPair keypair = keyGen.generateKeyPair();
+	    
+	        // Get the generated public and private keys
+	        PrivateKey privateKey = keypair.getPrivate();
+	        PublicKey publicKey = keypair.getPublic();
+	    
+	        // Send the public key bytes to the other party
+	        byte[] aPublicKeyBytes = publicKey.getEncoded();
+	        
+	        System.out.println("Key length:"+aPublicKeyBytes.length);
+	        
+	        System.out.println("aPublicKey:\n"+asHex(aPublicKeyBytes));
+	        
+		    // Send the DH parameters to B	        
+	        DatagramPacket keyPacket = new DatagramPacket(aPublicKeyBytes, aPublicKeyBytes.length, 
+	        		InetAddress.getByName(_bIP), _bPort);
+	        DatagramSocket socket = new DatagramSocket();
+	        socket.send(keyPacket);
+	        
+	        /*
+	        byte[] outBuffer = new byte[alicePublicKeyBytes.length];
+	        
+            // write the bytes into the byte array in order to maintain byte array length
+            for (int i =0; i < aPublicKeyBytes.length; i++)
+            {
+                outBuffer[i] = aPublicKeyBytes[i];
+            }
+	        
+            // Send the public key to B and receive B's public key
+            byte[] bPublicKeyBytes = send(_bIP, _echoBPort, outBuffer, valuesInStr.getBytes());
+            */
+	        byte[] keyBuffer = new byte[alicePublicKeyBytes.length];
+            DatagramPacket expectPacket = new DatagramPacket(keyBuffer, keyBuffer.length);
+            socket.receive(expectPacket);
+            
+            byte[] bPublicKeyBytes = expectPacket.getData();
+            
+            System.out.println("bPublicKey:\n"+asHex(bPublicKeyBytes));
+
+	        // Convert the public key bytes into a PublicKey object
+	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bobPublicKeyBytes);
+	        KeyFactory keyFact = KeyFactory.getInstance("DH");
+	        PublicKey bobPublicKey = keyFact.generatePublic(x509KeySpec);
+	        System.out.println("A's SecretKey generated and stored");
+	        
+	        // Prepare to generate the secret key with the private key and public key of the other party
+	        KeyAgreement ka = KeyAgreement.getInstance("DH");
+	        ka.init(privateKey);
+	        ka.doPhase(bobPublicKey, true);
+	        
+	        // Specify the type of key to generate;
+	        // see e458 Listing All Available Symmetric Key Generators
+	        String algorithm = "DES";
+	    
+	        // Generate the secret key
+	        SecretKey secretKey = ka.generateSecret(algorithm);
+	        
+	        System.out.println("A's SecretKey generated:"+secretKey);
+	    
+	        // Use the secret key to encrypt/decrypt data;
+	        // see e462 Encrypting a String with DES
+	    } catch (SocketException e) {
+	    } catch (java.security.InvalidKeyException e) {
+	    } catch (java.security.spec.InvalidKeySpecException e) {
+	    } catch (java.security.InvalidAlgorithmParameterException e) {
+	    } catch (java.security.NoSuchAlgorithmException e) {
+	    } catch (IOException e) {
+	    }
+	}
+
+}
