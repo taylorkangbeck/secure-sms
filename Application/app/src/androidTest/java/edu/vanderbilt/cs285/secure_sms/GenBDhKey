@@ -139,7 +139,7 @@ public class genBDhKey {
 
 	        // Convert the public key bytes into a PublicKey object
             System.out.println("A's SecretKey generated and stored");
-	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(alicePublicKeyBytes);
+	        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(aPublicKeyBytes);
 	        KeyFactory keyFact = KeyFactory.getInstance("DH");
 	        PublicKey alicePublicKey = keyFact.generatePublic(x509KeySpec);
 	        
