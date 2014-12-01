@@ -62,6 +62,7 @@ public class SimpleSendSMSActivity extends Activity {
                 if (recNumString.length() > 0 && secretKeyString.length() > 0
                         && msgContentString.length() > 0
                         && secretKeyString.length() == 16) {
+
                     if (encSwitch.isChecked()) {
                         // encrypt the message
                         byte[] encryptedMsg = encryptSMS(secretKeyString,
