@@ -1,3 +1,4 @@
+/*
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.content.Context;
@@ -9,9 +10,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+*/
 /**
  * Created by Taylor on 11/28/2014.
- */
+ *//*
+
 public class ConversationsListAdapter extends BaseAdapter {
     private Context mContext;
     //private Cursor mCursor;
@@ -79,3 +82,4 @@ public class ConversationsListAdapter extends BaseAdapter {
     }
 
 }
+*/
