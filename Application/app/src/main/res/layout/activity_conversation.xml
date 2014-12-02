@@ -38,4 +38,5 @@
             android:id="@+id/button"
             android:layout_toRightOf="@+id/editText" />
     </RelativeLayout>
+
 </RelativeLayout>

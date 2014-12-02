@@ -31,6 +31,8 @@ public class ConversationActivity extends Activity {
     String convoId;
     ListView listview;
     String recipient;
+    Menu mOptionsMenu;
+    boolean activeSession = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +78,8 @@ public class ConversationActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        mOptionsMenu = menu;
+        getMenuInflater().inflate(R.menu.menu_conversation, menu);
         return true;
     }
 
@@ -90,8 +93,14 @@ public class ConversationActivity extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_encrypt) {
+            if (activeSession)
+                mOptionsMenu.findItem(R.id.action_encrypt).setIcon(R.drawable.ic_lock_open_black_24dp);
+            else
+                mOptionsMenu.findItem(R.id.action_encrypt).setIcon(R.drawable.ic_lock_black_24dp);
+            activeSession = !activeSession;
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }
