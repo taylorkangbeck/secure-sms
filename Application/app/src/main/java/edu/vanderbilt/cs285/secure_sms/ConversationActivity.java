@@ -3,81 +3,83 @@ package edu.vanderbilt.cs285.secure_sms;
 import java.util.Locale;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class ConversationActivity extends FragmentActivity implements ActionBar.TabListener {
+public class ConversationActivity extends Activity {
 //represents single conversation with another person, with tabs for insecure and secure messaging
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v13.app.FragmentStatePagerAdapter}.
-     */
-    SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    ViewPager mViewPager;
+    String convoId;
+    ListView listview;
+    String recipient;
+    Menu mOptionsMenu;
+    boolean activeSession = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_conversations_list);
+        setContentView(R.layout.activity_conversation);
 
-        // Set up the action bar.
-        final ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        //get convoId
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            convoId = extras.getString("CONVO_ID");
+            //Toast.makeText(ConversationActivity.this,convoId, Toast.LENGTH_SHORT).show();
+        }
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        // When swiping between different sections, select the corresponding
-        // tab. We can also use ActionBar.Tab#select() to do this if we have
-        // a reference to the Tab.
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
+        listview = (ListView) findViewById(R.id.oneConvoListView);
+        int[] tvIds = new int[]{R.id.msgSender, R.id.msgBody};
+
+        String[] qColumns = new String[]{"type","body"};
+
+        //Cursor cursor = getContentResolver().query(inboxUri, null, null, null, "date DESC");
+        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + convoId, null, "date ASC");
+        cursor.moveToFirst();
+        recipient = cursor.getString(cursor.getColumnIndex("address"));
+        setTitle(recipient);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.message_item, cursor, qColumns, tvIds);
+        listview.setAdapter(adapter);
+
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                //TODO: allow decryption by tapping?
+
+                //TextView tv = (TextView) findViewById(R.id.msgBody);
+                //String text = tv.getText().toString();
+
+                //Toast.makeText(getApplicationContext(), ":" + text, Toast.LENGTH_SHORT);
+
             }
         });
-
-        // For each of the sections in the app, add a tab to the action bar.
-        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-            // Create a tab with text corresponding to the page title defined by
-            // the adapter. Also specify this Activity object, which implements
-            // the TabListener interface, as the callback (listener) for when
-            // this tab is selected.
-            actionBar.addTab(
-                    actionBar.newTab()
-                            .setText(mSectionsPagerAdapter.getPageTitle(i))
-                            .setTabListener(this));
-        }
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        mOptionsMenu = menu;
+        getMenuInflater().inflate(R.menu.menu_conversation, menu);
         return true;
     }
 
@@ -91,64 +93,14 @@ public class ConversationActivity extends FragmentActivity implements ActionBar.
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_encrypt) {
+            if (activeSession)
+                mOptionsMenu.findItem(R.id.action_encrypt).setIcon(R.drawable.ic_lock_open_black_24dp);
+            else
+                mOptionsMenu.findItem(R.id.action_encrypt).setIcon(R.drawable.ic_lock_black_24dp);
+            activeSession = !activeSession;
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-        // When the given tab is selected, switch to the corresponding page in
-        // the ViewPager.
-        mViewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch(position) {
-                case 0:
-                    return new InsecureSMSFragment();
-                case 1:
-                    return new EncryptedSMSFragment();
-            }
-            Toast.makeText(getApplicationContext(), "No more fragments!", Toast.LENGTH_LONG);
-            return null;
-        }
-
-        @Override
-        public int getCount() {
-            // Show 2 total pages.
-            return 2;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            Locale l = Locale.getDefault();
-            switch (position) {
-                case 0:
-                    return getString(R.string.title_section1).toUpperCase(l);
-                case 1:
-                    return getString(R.string.title_section2).toUpperCase(l);
-            }
-            return null;
-        }
     }
 }

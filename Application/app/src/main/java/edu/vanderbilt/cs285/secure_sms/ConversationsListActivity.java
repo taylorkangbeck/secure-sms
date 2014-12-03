@@ -1,7 +1,10 @@
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,39 +14,42 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 
 public class ConversationsListActivity extends Activity {
 //lists current conversations
 
+    ListView listview;
+    Context context;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversations_list);
+        context = this;
 
-        Uri mSmsinboxQueryUri = Uri.parse("content://sms/inbox");
-        Cursor cursor1 = getContentResolver().query(mSmsinboxQueryUri,new String[] { "_id", "thread_id", "address", "person", "date","body", "type" }, null, null, null);
+        listview = (ListView) findViewById(R.id.convoListView);
+        int[] tvIds = new int[]{R.id.contactView, R.id.bodyView};
 
-        /*
-        ContentResolver contentResolver = getContentResolver();
-        final String[] projection = new String[]{"*"};
-        Uri uri = Uri.parse("content://mms-sms/conversations/");
-        Cursor query = contentResolver.query(uri, projection, null, null, null);
-        query.moveToFirst();
-        String [] cols = query.getColumnNames();
-        for(String s : cols) {
-            Log.i("Column",s);
-        }
+        String[] qColumns = new String[]{"address","body"};
 
-        */
-        ListView listview = (ListView) findViewById(R.id.convoListView);
-        listview.setAdapter(new ConversationsListAdapter(this, cursor1));
+        Uri inboxUri = Uri.parse("content://mms-sms/conversations");
+        Cursor cursor = getContentResolver().query(inboxUri, null, null, null, "date DESC");
 
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.conversations_list_item, cursor, qColumns, tvIds);
+        listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText(ConversationsListActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+                Cursor cursor  = (Cursor) listview.getItemAtPosition(position);
+                String convoId = cursor.getString(cursor.getColumnIndex("thread_id"));
+                //Toast.makeText(ConversationsListActivity.this,convoId, Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(getBaseContext(), ConversationActivity.class);
+                intent.putExtra("CONVO_ID", convoId);
+                startActivity(intent);
             }
         });
     }
@@ -64,6 +70,11 @@ public class ConversationsListActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        else if (id == R.id.action_newsms) {
+            Intent in = new Intent(getBaseContext(), SimpleSendSMSActivity.class);
+            startActivity(in);
             return true;
         }
 
