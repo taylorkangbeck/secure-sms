@@ -17,9 +17,19 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+
 
 public class ConversationsListActivity extends Activity {
 //lists current conversations
+
+    // stores the mapping of phone# -> associated keys
+    public static UserKeyStore keyStore;
 
     ListView listview;
     Context context;
@@ -52,6 +62,31 @@ public class ConversationsListActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        // load the keystore
+        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
+        try {
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+            keyStore = (UserKeyStore) inputStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // saves keystore to memory, so that it persists
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
+        try {
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(keyStore);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
