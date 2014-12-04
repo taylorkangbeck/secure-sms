@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
 
 
 public class ConversationsListActivity extends Activity {
@@ -111,8 +110,11 @@ public class ConversationsListActivity extends Activity {
             startActivity(in);
             return true;
         }
-
-        return super.onOptionsItemSelected(item);
+        else {
+            Intent in = new Intent(getBaseContext(), ViewMyFingerprintActivity.class);
+            startActivity(in);
+            return true;
+        }
     }
 
 }
