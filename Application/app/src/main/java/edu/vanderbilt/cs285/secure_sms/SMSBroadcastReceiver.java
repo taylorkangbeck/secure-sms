@@ -24,7 +24,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         SMSHandler smsHandler = new SMSHandler();
-        Intent in=new Intent(context,SimpleReceiveSMSActivity.class);
+        Intent in=new Intent(context,ConversationActivity.class);
         in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         in.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -44,10 +44,12 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
 
                     Log.w(TAG, "message received is " + message);
 
+
+
                     //handle message for each sender
-                    smsHandler.handleMessage(message, sender, context, intent);
+                    //smsHandler.handleMessage(message, sender, context, intent);
                     //fill the sender's phone number into Intent
-                    in.putExtra("originNum", sender);
+                    //in.putExtra("originNum", sender);
 
                     //fill the entire message body into Intent
                     in.putExtra("msgContent", message);

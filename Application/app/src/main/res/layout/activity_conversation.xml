@@ -29,14 +29,14 @@
         <EditText
             android:layout_width="300dp"
             android:layout_height="match_parent"
-            android:id="@+id/editText" />
+            android:id="@+id/textText" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Send"
-            android:id="@+id/button"
-            android:layout_toRightOf="@+id/editText" />
+            android:id="@+id/sendButton"
+            android:layout_toRightOf="@+id/textText" />
     </RelativeLayout>
 
 </RelativeLayout>

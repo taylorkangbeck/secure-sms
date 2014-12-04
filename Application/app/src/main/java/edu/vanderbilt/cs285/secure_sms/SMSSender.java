@@ -22,7 +22,7 @@ class SMSSender {
     EncryptionHelper symmetricEncryptionHelper;
 
 
-    private SMSSender(String phoneNum, String msg) {
+    public SMSSender(String phoneNum, String msg) {
         this.recipientNum = phoneNum;
         this.message = msg;
     }
