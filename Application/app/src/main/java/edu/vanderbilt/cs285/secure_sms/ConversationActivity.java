@@ -1,28 +1,15 @@
 package edu.vanderbilt.cs285.secure_sms;
 
-import java.util.Locale;
-
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class ConversationActivity extends Activity {
