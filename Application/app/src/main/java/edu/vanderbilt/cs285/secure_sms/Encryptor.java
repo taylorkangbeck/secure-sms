@@ -3,7 +3,7 @@ package edu.vanderbilt.cs285.secure_sms;
 /**
  * Created by Jay on 11/30/2014.
  */
-public interface Encryptor {
+interface Encryptor {
 
     //method signatures
     byte[] decryptBytes(byte[] cipherText) throws Exception;
