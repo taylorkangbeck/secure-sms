@@ -8,7 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 
-public class ViewMyFingerprint extends Activity {
+public class ViewMyFingerprintActivity extends Activity {
 
     TextView key;
 
