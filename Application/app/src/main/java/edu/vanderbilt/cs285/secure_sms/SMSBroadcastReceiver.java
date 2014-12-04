@@ -19,10 +19,6 @@ import java.util.Map;
 
 public class SMSBroadcastReceiver extends BroadcastReceiver {
     private final String TAG = "SmsReceiver";
-    // actions/ intent filters
-    private final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
-    private final String SMS_SENT = "SMS_SENT";
-    private final String SMS_DELIVERED = "SMS_DELIVERED";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -33,6 +29,9 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
         in.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 
+        String SMS_DELIVERED = "SMS_DELIVERED";
+        String SMS_SENT = "SMS_SENT";
+        String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
         if (action.equals(SMS_RECEIVED)) {
 
             //in case multiple sender messages come in at the same time

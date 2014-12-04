@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Created by Jay on 12/3/2014.
  */
-public class SMSTypeDecoder {
+class SMSTypeDecoder {
 
     private static final int HASH_ITERATIONS = 500;
     private static final int PREFIX_BYTES    = 3;
@@ -22,7 +22,7 @@ public class SMSTypeDecoder {
         return verifyPrefix("?TSM", message);
     }
 
-    public static boolean isPreKeyBundle(String message) {
+    public static boolean isEncrypted(String message) {
         return verifyPrefix("?TSP", message);
     }
 
@@ -38,7 +38,7 @@ public class SMSTypeDecoder {
         return calculatePrefix(("?TSM" + message).getBytes(), PREFIX_BYTES);
     }
 
-    public static String calculatePreKeyBundlePrefix(String message) {
+    public static String calculateEncryptedKeyPrefix(String message) {
         return calculatePrefix(("?TSP" + message).getBytes(), PREFIX_BYTES);
     }
 

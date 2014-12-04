@@ -25,30 +25,29 @@ public class AsymmetricEncrpytor implements Encryptor {
     //shared prefs for key storage
     public static final String PREFS_MY_KEYS = "MyKeys";
 
-    public static final String PREF_PUBLIC_MOD = "PublicModulus";
-    public static final String PREF_PUBLIC_EXP = "PublicExponent";
-    public static final String PREF_PRIVATE_MOD = "PrivateModulus";
-    public static final String PREF_PRIVATE_EXP = "PrivateExponent";
+    private static final String PREF_PUBLIC_MOD = "PublicModulus";
+    private static final String PREF_PUBLIC_EXP = "PublicExponent";
+    private static final String PREF_PRIVATE_MOD = "PrivateModulus";
+    private static final String PREF_PRIVATE_EXP = "PrivateExponent";
 
-    public static final String DEFAULT_PREF = "";
+    private static final String DEFAULT_PREF = "";
     public static final String DEFAULT_CONTACT_NUM = "+6584781395";
     public static final int DEFAULT_KEY_SIZE = 1024;
 
-    private static PublicKey publicKey;
     private static PrivateKey privateKey;
 
     private static RSAPublicKeySpec reciepientsPublicKey;
     private static RSAPrivateKeySpec receipientsPrivateKey;
 
-    public AsymmetricEncrpytor(){
+    private AsymmetricEncrpytor(){
     }
     //generate RSA keypair information
-    public static void init(Context context) throws Exception {
+    private static void init(Context context) throws Exception {
         KeyPairGenerator kpg= KeyPairGenerator.getInstance("RSA");
         SecureRandom random = new SecureRandom();
         kpg.initialize(1024, random);
         KeyPair kp = kpg.generateKeyPair();
-        publicKey = kp.getPublic();
+        PublicKey publicKey = kp.getPublic();
         privateKey = kp.getPrivate();
         KeyFactory fact = KeyFactory.getInstance("RSA");
         RSAPublicKeySpec pub = fact.getKeySpec(publicKey,
@@ -62,14 +61,6 @@ public class AsymmetricEncrpytor implements Encryptor {
 
     }
 
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public PrivateKey getPrivateKey() {
-        return privateKey;
-    }
-
     //RSA encryption
     public byte[] encryptBytes(byte[] plainBytes) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
@@ -77,6 +68,22 @@ public class AsymmetricEncrpytor implements Encryptor {
         PublicKey publicKey=keyFactory.generatePublic(reciepientsPublicKey);
         cipher.init(Cipher.ENCRYPT_MODE,publicKey );
         return cipher.doFinal(plainBytes);
+    }
+    public static byte[] encryptBytes(byte[] data, RSAPublicKeySpec recipientsPubKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        KeyFactory keyFactory=KeyFactory.getInstance("RSA");
+        PublicKey publicKey=keyFactory.generatePublic(recipientsPubKey);
+        cipher.init(Cipher.ENCRYPT_MODE,publicKey );
+        return cipher.doFinal(data);
+    }
+
+
+    public static byte[] decryptBytes(byte[] data, RSAPrivateKeySpec recipientsPrivKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        KeyFactory keyFactory=KeyFactory.getInstance("RSA");
+        PublicKey publicKey=keyFactory.generatePublic(recipientsPrivKey);
+        cipher.init(Cipher.ENCRYPT_MODE,publicKey );
+        return cipher.doFinal(data);
     }
 
     //RSA decrpytion
@@ -195,7 +202,7 @@ public class AsymmetricEncrpytor implements Encryptor {
     }
 
 
-    public static void savePublicKey(String mod, String exp, Context context) {
+    private static void savePublicKey(String mod, String exp, Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_MY_KEYS,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = prefs.edit();
@@ -225,8 +232,8 @@ public class AsymmetricEncrpytor implements Encryptor {
         }
     }
 
-    public static void savePrivateKey(RSAPrivateKeySpec privateKey,
-                                      Context context) {
+    private static void savePrivateKey(RSAPrivateKeySpec privateKey,
+                                       Context context) {
         BigInteger privateModBI = privateKey.getModulus();
         BigInteger privateExpBI = privateKey.getPrivateExponent();
 
@@ -259,13 +266,5 @@ public class AsymmetricEncrpytor implements Encryptor {
         prefsEditor.putString(PREF_PRIVATE_EXP, exp);
         // prefsEditor.putString(PREF_PRIVATE_MOD, DEFAULT_PRIVATE_MOD);
         prefsEditor.apply();
-    }
-
-    public static void setReceiverKey(RSAPublicKeySpec recipientsPubKey) {
-        reciepientsPublicKey = recipientsPubKey;
-    }
-
-    public static void setReceiverKey(RSAPrivateKeySpec recipientPrivateKeySpec) {
-        receipientsPrivateKey = recipientPrivateKeySpec;
     }
 }

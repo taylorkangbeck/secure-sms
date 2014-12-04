@@ -12,7 +12,7 @@ import java.util.ArrayList;
 /**
  * Created by Jay on 12/3/2014.
  */
-public class SMSSender {
+class SMSSender {
     private final String TAG = SMSSender.class.getName();
 
     private String recipientNum;
@@ -22,7 +22,7 @@ public class SMSSender {
     EncryptionHelper symmetricEncryptionHelper;
 
 
-    public SMSSender(String phoneNum, String msg) {
+    private SMSSender(String phoneNum, String msg) {
         this.recipientNum = phoneNum;
         this.message = msg;
     }
@@ -47,7 +47,7 @@ public class SMSSender {
         this.message = msgStr;
     }
 
-    public void sendLongSMS(Context context) {
+    void sendLongSMS(Context context) {
         String SENT = "SMS_SENT";
         String DELIVERED = "SMS_DELIVERED";
         SmsManager sm = SmsManager.getDefault();
@@ -75,7 +75,7 @@ public class SMSSender {
         }
     }
 
-    public void sendSMS(Context context) {
+    void sendSMS(Context context) {
         String SENT = "SMS_SENT";
         String DELIVERED = "SMS_DELIVERED";
 
@@ -96,9 +96,9 @@ public class SMSSender {
         }
     }
 
-    public void sendKeyExchangeSMS(String recipient, String key,
-                                   Context context) {
-         String message = SMSTypeDecoder.calculateKeyExchangePrefix(key) + key;
+    void sendKeyExchangeSMS(String recipient, String key,
+                            Context context) {
+            String message = SMSTypeDecoder.calculateKeyExchangePrefix(key) + key;
             this.recipientNum = recipient;
             this.message = message;
             if (this.message.length() > 160) {
@@ -109,11 +109,10 @@ public class SMSSender {
 
     }
 
-    public void sendKeyExchangeSMS(Context context) {
+    void sendKeyExchangeSMS(Context context) {
         if (this.recipientNum==null || this.recipientNum.isEmpty()) {
             Log.e(TAG, "Recipient number is not set: "+this.recipientNum);
         } else {
-
             String pubMod = AsymmetricEncrpytor.getPubMod(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
             String pubExp = AsymmetricEncrpytor.getPubExp(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
             // EditText recipient = (EditText) findViewById(R.id.InputRecipientNum);
@@ -128,37 +127,56 @@ public class SMSSender {
     public void sendSecureSMS(Context context, String message) {
         // "sending a secure SMS, recipient is "+this.recipientNum+" original message is "+this.message);
         String encrypted = "";
-        if(SymmetricEncrpytor.isInitialized())
+        String symmetricKey = SymmetricEncryptor.getRecipientsSymmetricKey(this.recipientNum, context);
+        if(symmetricKey != null)
         {
             try {
-                encrypted = symmetricEncryptionHelper.encryptBody(message);
+                encrypted = EncryptionHelper.encryptBody(message, symmetricKey);
+                this.message = SMSTypeDecoder.calculateEncryptedMesagePrefix(encrypted) + encrypted;
+                if (this.message.length() > 160) {
+                    sendLongSMS(context);
+                } else {
+                    sendSMS(context);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
         else{
             RSAPublicKeySpec recipientsPubKey = AsymmetricEncrpytor.getRecipientsPublicKey(
                     this.recipientNum, context);
-            AsymmetricEncrpytor.setReceiverKey(recipientsPubKey);
-            try {
-                encrypted = publicEncryptionHelper.encryptBody(message);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             if (recipientsPubKey == null) {
                 Log.e(TAG, "recipient's public key could not be retrieved for "
                         + this.recipientNum);
+                sendKeyExchangeSMS(context);
             }
-            this.message = SMSTypeDecoder.calculateEncryptedMesagePrefix(encrypted) + encrypted;
-            if (this.message.length() > 160) {
-                sendLongSMS(context);
-            } else {
-                sendSMS(context);
+            else
+            try {
+                //continue key exhange//encrypted = EncryptionHelper.encryptBody(message, recipientsPubKey);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+
 
     }
 
 
+    }
+
+    public void sendSymmetricKey(Context context) {
+       try{
+        byte [] key = SymmetricEncryptor.generateKey();
+        RSAPublicKeySpec recipientsPubKey = AsymmetricEncrpytor.getRecipientsPublicKey( this.recipientNum, context);
+        message = EncryptionHelper.encryptAndEncodeBytes(key, recipientsPubKey);
+        message = SMSTypeDecoder.calculateEncryptedKeyPrefix(message) + message;
+        if (this.message.length() > 160) {
+            sendLongSMS(context);
+        } else {
+            sendSMS(context);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
     }
 }
