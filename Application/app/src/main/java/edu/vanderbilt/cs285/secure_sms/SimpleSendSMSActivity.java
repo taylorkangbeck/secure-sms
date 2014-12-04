@@ -10,11 +10,9 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 
 //portions of this code have been adapted from  https://sites.google.com/site/mobilesecuritylabware/3-data-location-privacy/lab-activity/cryptography/cryptography-mobile-labs/encryption-decryption/2-lab-activity/lab-activity
 public class SimpleSendSMSActivity extends Activity {
@@ -25,7 +23,7 @@ public class SimpleSendSMSActivity extends Activity {
     Button send;
     Button cancel;
     Switch encSwitch;
-
+    SMSSender sender;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
