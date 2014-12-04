@@ -33,4 +33,16 @@ public class UserKeyStore implements Serializable {
     public boolean hasPrivateKey(String number) {
         return keyStore.get(number).hasPrivateKey();
     }
+
+    public void addUser(String number, UserKeyPair ukp) {
+        keyStore.put(number, ukp);
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for(UserKeyPair ukp : keyStore.values()) {
+            sb.append("Public Key: " + ukp.getPublicKey() + "\nSymmetric Key: " + ukp.getSymmetricKey() + "\n\n");
+        }
+        return sb.toString();
+    }
 }

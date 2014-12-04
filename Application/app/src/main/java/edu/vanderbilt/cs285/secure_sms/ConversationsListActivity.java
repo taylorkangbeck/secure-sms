@@ -71,6 +71,14 @@ public class ConversationsListActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if(keyStore == null)
+            keyStore = new UserKeyStore();
+
+        Toast.makeText(
+                getBaseContext(),
+                "UserKeyStore\n" + keyStore,
+                Toast.LENGTH_SHORT).show();
     }
 
     // saves keystore to memory, so that it persists

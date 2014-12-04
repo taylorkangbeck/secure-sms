@@ -20,7 +20,6 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 public class SimpleSendSMSActivity extends Activity {
 
     EditText recip;
-    EditText secretKey;
     EditText msgContent;
     Button send;
     Button cancel;
@@ -32,7 +31,6 @@ public class SimpleSendSMSActivity extends Activity {
         setContentView(R.layout.activity_simple_send_sms);
 
         recip = (EditText) findViewById(R.id.recipient);
-        secretKey = (EditText) findViewById(R.id.secretKey);
         msgContent = (EditText) findViewById(R.id.msgContent);
         send = (Button) findViewById(R.id.Send);
         cancel = (Button) findViewById(R.id.cancel);
@@ -53,20 +51,20 @@ public class SimpleSendSMSActivity extends Activity {
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String recNumString = recip.getText().toString();
-                String secretKeyString = secretKey.getText().toString();
+                String secretKeyString = "10"; // TODO: fix this
                 String msgContentString = msgContent.getText().toString();
                 String msgString = "";
 
                 // check for the validity of the user input
                 // key length should be 16 characters as defined by AES-128-bit
-                if (recNumString.length() > 0 && secretKeyString.length() > 0
-                        && msgContentString.length() > 0
-                        && secretKeyString.length() == 16) {
-
+                if (recNumString.length() > 0
+                        && msgContentString.length() > 0) {
                     if (encSwitch.isChecked()) {
                         // encrypt the message
+
                         byte[] encryptedMsg = encryptSMS(secretKeyString,
                                 msgContentString);
+
                         // convert the byte array to hex format for transmission
                         msgString = byte2hex(encryptedMsg);
                     }
@@ -80,7 +78,7 @@ public class SimpleSendSMSActivity extends Activity {
                 } else
                     Toast.makeText(
                             getBaseContext(),
-                            "Please enter phone number, secret key and the message. Secret key must be 16 characters!",
+                            "Please enter phone number and a message.",
                             Toast.LENGTH_SHORT).show();
             }
         });

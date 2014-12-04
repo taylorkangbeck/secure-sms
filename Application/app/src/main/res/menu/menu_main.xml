@@ -4,6 +4,10 @@
         android:icon="@drawable/ic_add_black_24dp"
         android:title="New message"
         android:showAsAction="ifRoom" />
+    <item android:id="@+id/viewFingerprint"
+        android:icon="@drawable/ic_add_black_24dp"
+        android:title="View My Fingerprint"
+        android:showAsAction="never" />
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:showAsAction="never" />
