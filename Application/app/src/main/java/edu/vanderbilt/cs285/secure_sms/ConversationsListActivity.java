@@ -13,9 +13,18 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 
 public class ConversationsListActivity extends Activity {
 //lists current conversations
+
+    // stores the mapping of phone# -> associated keys
+    public static UserKeyStore keyStore;
 
     ListView listview;
     Context context;
@@ -48,6 +57,34 @@ public class ConversationsListActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        // load the keystore
+        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
+        try {
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+            keyStore = (UserKeyStore) inputStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if(keyStore == null)
+            keyStore = new UserKeyStore();
+    }
+
+    // saves keystore to memory, so that it persists
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
+        try {
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(keyStore);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -73,8 +110,11 @@ public class ConversationsListActivity extends Activity {
             startActivity(in);
             return true;
         }
-
-        return super.onOptionsItemSelected(item);
+        else {
+            Intent in = new Intent(getBaseContext(), ViewMyFingerprintActivity.class);
+            startActivity(in);
+            return true;
+        }
     }
 
 }
