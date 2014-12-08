@@ -76,20 +76,8 @@ public class ConversationActivity extends Activity {
             public void onClick(View v) {
                 EditText txt = (EditText) findViewById(R.id.textText);
                 if (activeSession) {
-                    EncryptionHelper eh = new EncryptionHelper(new Encryptor() {
-                        @Override
-                        public byte[] decryptBytes(byte[] cipherText) throws Exception {
-                            return new byte[0];
-                        }
-
-                        @Override
-                        public byte[] encryptBytes(byte[] plainText) throws Exception {
-                            return new byte[0];
-                        }
-                    });
-
                     try {
-                        String txtToSend = eh.encryptBody(txt.getText().toString(), "11111111111111111");
+                        String txtToSend = EncryptionHelper.encryptBody(txt.getText().toString(), "11111111111111111");
                         SMSSender sender = new SMSSender(recipient, txtToSend);
                         sender.sendLongSMS(getApplicationContext());
                     } catch (Exception e) {
@@ -138,19 +126,8 @@ public class ConversationActivity extends Activity {
 
     public void toastDec(String sms) {
         if (activeSession) {
-            EncryptionHelper eh = new EncryptionHelper(new Encryptor() {
-                @Override
-                public byte[] decryptBytes(byte[] cipherText) throws Exception {
-                    return new byte[0];
-                }
-
-                @Override
-                public byte[] encryptBytes(byte[] plainText) throws Exception {
-                    return new byte[0];
-                }
-            });
             try {
-                String dec = eh.decryptBody(sms, "1111111111111111");
+                String dec = EncryptionHelper.decryptBody(sms, "1111111111111111");
                 Toast.makeText(getApplicationContext(), dec, Toast.LENGTH_SHORT);
                 //tv.setText(dec);
             } catch (Exception e) {

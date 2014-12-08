@@ -49,7 +49,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
                     //handle message for each sender
                     //smsHandler.handleMessage(message, sender, context, intent);
                     //fill the sender's phone number into Intent
-                    //in.putExtra("originNum", sender);
+                    in.putExtra("originNum", sender);
 
                     //fill the entire message body into Intent
                     in.putExtra("msgContent", message);

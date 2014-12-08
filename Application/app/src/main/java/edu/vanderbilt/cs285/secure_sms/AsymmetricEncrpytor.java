@@ -19,7 +19,7 @@ import javax.crypto.Cipher;
 /**
  * Created by Jay on 11/30/2014.
  */
-public class AsymmetricEncrpytor implements Encryptor {
+public class AsymmetricEncrpytor {
 
     private final static String TAG = AsymmetricEncrpytor.class.getName();
     //shared prefs for key storage
@@ -31,24 +31,15 @@ public class AsymmetricEncrpytor implements Encryptor {
     private static final String PREF_PRIVATE_EXP = "PrivateExponent";
 
     private static final String DEFAULT_PREF = "";
-    public static final String DEFAULT_CONTACT_NUM = "+6584781395";
-    public static final int DEFAULT_KEY_SIZE = 1024;
 
-    private static PrivateKey privateKey;
-
-    private static RSAPublicKeySpec reciepientsPublicKey;
-    private static RSAPrivateKeySpec receipientsPrivateKey;
-
-    private AsymmetricEncrpytor(){
-    }
     //generate RSA keypair information
-    private static void init(Context context) throws Exception {
+    public static void init(Context context) throws Exception {
         KeyPairGenerator kpg= KeyPairGenerator.getInstance("RSA");
         SecureRandom random = new SecureRandom();
         kpg.initialize(1024, random);
         KeyPair kp = kpg.generateKeyPair();
         PublicKey publicKey = kp.getPublic();
-        privateKey = kp.getPrivate();
+        PrivateKey privateKey = kp.getPrivate();
         KeyFactory fact = KeyFactory.getInstance("RSA");
         RSAPublicKeySpec pub = fact.getKeySpec(publicKey,
                 RSAPublicKeySpec.class);
@@ -62,13 +53,6 @@ public class AsymmetricEncrpytor implements Encryptor {
     }
 
     //RSA encryption
-    public byte[] encryptBytes(byte[] plainBytes) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA");
-        KeyFactory keyFactory=KeyFactory.getInstance("RSA");
-        PublicKey publicKey=keyFactory.generatePublic(reciepientsPublicKey);
-        cipher.init(Cipher.ENCRYPT_MODE,publicKey );
-        return cipher.doFinal(plainBytes);
-    }
     public static byte[] encryptBytes(byte[] data, RSAPublicKeySpec recipientsPubKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         KeyFactory keyFactory=KeyFactory.getInstance("RSA");
@@ -86,12 +70,6 @@ public class AsymmetricEncrpytor implements Encryptor {
         return cipher.doFinal(data);
     }
 
-    //RSA decrpytion
-    public byte[] decryptBytes(byte[] cipherBytes) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return cipher.doFinal(cipherBytes);
-    }
 
     /*
      * get the modulus from sharedpreferences
@@ -120,8 +98,8 @@ public class AsymmetricEncrpytor implements Encryptor {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_MY_KEYS,
                 Context.MODE_PRIVATE);
 
-        String pubMod = prefs.getString(PREF_PRIVATE_MOD, DEFAULT_PREF);
-        String pubExp = prefs.getString(PREF_PRIVATE_EXP, DEFAULT_PREF);
+        String pubMod = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
+        String pubExp = prefs.getString(PREF_PUBLIC_EXP, DEFAULT_PREF);
         // String recipient = prefs.getString(PREF_RECIPIENT_NUM, DEFAULT_PREF);
         if (!pubMod.isEmpty() && !pubExp.isEmpty()) {
             byte[] pubModBA = Base64.decode(pubMod, Base64.DEFAULT);
@@ -171,34 +149,8 @@ public class AsymmetricEncrpytor implements Encryptor {
         String privateMod = prefs.getString(PREF_PRIVATE_MOD, DEFAULT_PREF);
         String privateExp = prefs.getString(PREF_PRIVATE_EXP, DEFAULT_PREF);
 
-        boolean keysExist = false;
-
-        if (!pubMod.isEmpty() && !pubExp.isEmpty() && !privateMod.isEmpty()
-                && !privateExp.isEmpty()) {
-            Log.i(TAG, "keys found, not regenerating");
-            keysExist = true;
-        } else {
-
-            keysExist = false;
-        }
-        if (!keysExist) {
-            init(context);
-            return true;
-        } else {
-            // MyUtils.alert("Keys exist, not generating", MainActivity.this);
-            byte[] myPubModBA = Base64.decode(pubMod, Base64.DEFAULT);
-            byte[] myPubExpBA = Base64.decode(pubExp, Base64.DEFAULT);
-            byte[] myPrivateModBA = Base64.decode(privateMod, Base64.DEFAULT);
-            byte[] myPrivateExpBA = Base64.decode(privateExp, Base64.DEFAULT);
-
-            BigInteger myPubModBI = new BigInteger(myPubModBA);
-            BigInteger myPubExpBI = new BigInteger(myPubExpBA);
-
-            BigInteger myPrivateModBI = new BigInteger(myPrivateModBA);
-            BigInteger myPrivateExpBI = new BigInteger(myPrivateExpBA);
-
-            return true;
-        }
+        return (!pubMod.isEmpty() && !pubExp.isEmpty() && !privateMod.isEmpty()
+                && !privateExp.isEmpty()) ;
     }
 
 
@@ -209,7 +161,7 @@ public class AsymmetricEncrpytor implements Encryptor {
 
         prefsEditor.putString(PREF_PUBLIC_MOD, mod);
         prefsEditor.putString(PREF_PUBLIC_EXP, exp);
-        prefsEditor.commit();
+        prefsEditor.apply();
     }
 
     private static void savePublicKey(RSAPublicKeySpec pubKey, Context context) {
@@ -264,7 +216,6 @@ public class AsymmetricEncrpytor implements Encryptor {
 
         prefsEditor.putString(PREF_PRIVATE_MOD, mod);
         prefsEditor.putString(PREF_PRIVATE_EXP, exp);
-        // prefsEditor.putString(PREF_PRIVATE_MOD, DEFAULT_PRIVATE_MOD);
         prefsEditor.apply();
     }
 }

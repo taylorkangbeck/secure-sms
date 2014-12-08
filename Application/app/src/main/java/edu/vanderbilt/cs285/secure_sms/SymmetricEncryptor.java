@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -21,7 +22,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Created by Jay on 11/30/2014.
  */
-public class SymmetricEncryptor implements Encryptor {
+public class SymmetricEncryptor{
     private static final String TAG = SymmetricEncryptor.class.getName();
 
     private static boolean initialized = false;
@@ -30,17 +31,10 @@ public class SymmetricEncryptor implements Encryptor {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    private static byte[] iv;
-    private static byte[] symmetricKey;
-    private static SecretKeySpec aesKeySpec;
     private final static String SYMMETRIC_KEY = "SymmetricKey";
     private final static String DEFAULT_PREF = "";
     private static final String PREFS_MY_KEYS = "MyKeys";
-
-    private SymmetricEncryptor() throws Exception {
-        symmetricKey = generateRandomKey().getEncoded();
-        initialized = true;
-    }
+    private static final int ivLength = 16;
 
     // generate a random secret key
     private static SecretKey generateRandomKey() throws NoSuchAlgorithmException {
@@ -49,30 +43,12 @@ public class SymmetricEncryptor implements Encryptor {
         return generator.generateKey();
     }
 
-    public byte[] encryptBytes(byte[] plainText) throws Exception {
 
-        // create a digest for key
-        MessageDigest sha = MessageDigest.getInstance("SHA-256");
-
-        byte[] hashedKey = sha.digest(symmetricKey);
-
-        // create a hashed secret key
-        SecretKeySpec sk = new SecretKeySpec(hashedKey, "AES");
-        // Create the cipher
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-        // Initialize the cipher for encryption
-        cipher.init(Cipher.ENCRYPT_MODE, sk);
-        iv = cipher.getIV();
-        aesKeySpec = sk;
-        // Encrypt the plaintext
-        return cipher.doFinal(plainText);
-    }
 
     public static byte[] encryptBytes(byte[] key, byte[] data) throws Exception {
-        symmetricKey = key;
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
 
-        byte[] hashedKey = sha.digest(symmetricKey);
+        byte[] hashedKey = sha.digest(key);
 
         // create a hashed secret key
         SecretKeySpec sk = new SecretKeySpec(hashedKey, "AES");
@@ -80,26 +56,23 @@ public class SymmetricEncryptor implements Encryptor {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
         // Initialize the cipher for encryption
         cipher.init(Cipher.ENCRYPT_MODE, sk);
-        iv = cipher.getIV();
-        aesKeySpec = sk;
         // Encrypt the plaintext
-        return cipher.doFinal(data);
+        byte[] cipherText = cipher.doFinal(data);
+        //append IV to the start of the message
+        byte [] cipherTextwithIV = Arrays.copyOf(cipher.getIV(), ivLength + cipherText.length);
+        System.arraycopy(cipherText, 0, cipherTextwithIV, ivLength, cipherText.length);
+        return cipherTextwithIV;
     }
 
-    public byte[] decryptBytes(byte[] cipherText) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-        // Initialize the same cipher for decryption
-        cipher.init(Cipher.DECRYPT_MODE, aesKeySpec, new IvParameterSpec(iv));
-        // Decrypt the ciphertext
-        return cipher.doFinal(cipherText);
-    }
 
-    public static  byte[] decryptBytes(byte[] key, byte[] cipherText) throws Exception {
+    public static  byte[] decryptBytes(byte[] key, byte[] cipherTextwithIV) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
         // Initialize the same cipher for decryption
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         byte[] hashedKey = sha.digest(key);
         SecretKeySpec sk = new SecretKeySpec(hashedKey, "AES");
+        byte[] iv = Arrays.copyOfRange(cipherTextwithIV, 0, ivLength);
+        byte[] cipherText = Arrays.copyOfRange(cipherTextwithIV, ivLength, cipherTextwithIV.length);
         cipher.init(Cipher.DECRYPT_MODE, sk, new IvParameterSpec(iv));
         // Decrypt the ciphertext
         return cipher.doFinal(cipherText);
@@ -110,9 +83,6 @@ public class SymmetricEncryptor implements Encryptor {
         return initialized;
     }
 
-    public byte[] getKey() {
-        return symmetricKey;
-    }
 
     public static String getRecipientsSymmetricKey(String contactNum,
                                                    Context context) {

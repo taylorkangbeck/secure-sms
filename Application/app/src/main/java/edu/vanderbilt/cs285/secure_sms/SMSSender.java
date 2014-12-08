@@ -18,9 +18,6 @@ class SMSSender {
     private String recipientNum;
     private String message;
 
-    EncryptionHelper publicEncryptionHelper;
-    EncryptionHelper symmetricEncryptionHelper;
-
 
     public SMSSender(String phoneNum, String msg) {
         this.recipientNum = phoneNum;
@@ -126,7 +123,7 @@ class SMSSender {
 
     public void sendSecureSMS(Context context, String message) {
         // "sending a secure SMS, recipient is "+this.recipientNum+" original message is "+this.message);
-        String encrypted = "";
+        String encrypted;
         String symmetricKey = SymmetricEncryptor.getRecipientsSymmetricKey(this.recipientNum, context);
         if(symmetricKey != null)
         {
