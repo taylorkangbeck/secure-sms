@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
  */
 class SMSTypeDecoder {
 
-    private static final int HASH_ITERATIONS = 500;
+    private static final int HASH_ITERATIONS = 5;
     private static final int PREFIX_BYTES    = 3;
     public  static final int PREFIX_SIZE     = 4;
 

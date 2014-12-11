@@ -59,35 +59,8 @@ public class ConversationsListActivity extends Activity {
                 startActivity(intent);
             }
         });
-
-        // load the keystore
-        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
-        try {
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-            keyStore = (UserKeyStore) inputStream.readObject();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if(keyStore == null)
-            keyStore = new UserKeyStore();
     }
 
-    // saves keystore to memory, so that it persists
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        File file = new File(getDir("data", MODE_PRIVATE), "keyStore");
-        try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-            outputStream.writeObject(keyStore);
-            outputStream.flush();
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
