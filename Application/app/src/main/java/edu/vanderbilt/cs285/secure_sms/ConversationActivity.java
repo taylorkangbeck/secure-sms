@@ -56,21 +56,19 @@ public class ConversationActivity extends Activity {
 
         // moved from ConversationAdapter
         messages = new ArrayList<Message>();
+        mAdapter = new ConversationAdapter(this, messages);
+        listview.setAdapter(mAdapter);
 
         Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date ASC");
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             String a = cursor.getString(cursor.getColumnIndex("address"));
             String b = cursor.getColumnName(cursor.getColumnIndex("body"));
-            messages.add(new Message(a, "", b));
+            mAdapter.addMsg(new Message(a, "", b));
         }
         cursor.close();
         //address, body, creator(?)
 
-
-        mAdapter = new ConversationAdapter(this, messages);
-
-        listview.setAdapter(mAdapter);
         SMSBroadcastReceiver.setMessenger(messenger);
 
 

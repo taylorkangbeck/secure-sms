@@ -121,8 +121,8 @@ class SMSHandler {
             String[] parts = message.substring(SMSTypeDecoder.PREFIX_SIZE).split(" "); // expected structure of the key
             // exchange message:
             if (parts.length == 2) {
-                String recipientPubModBase64Str = parts[1];
-                String recipientPubExpBase64Str = parts[2];
+                String recipientPubModBase64Str = parts[0];
+                String recipientPubExpBase64Str = parts[1];
 
 
 
