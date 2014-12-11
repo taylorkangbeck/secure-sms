@@ -57,10 +57,17 @@ public class ConversationActivity extends Activity {
         // moved from ConversationAdapter
         messages = new ArrayList<Message>();
 
-        Uri inboxUri = Uri.parse("content://sms/conversations/" + thread_id);
-        Cursor cursor = getContentResolver().query(inboxUri, null, null, null, "date DESC");
+        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date ASC");
         cursor.moveToFirst();
-        
+        while(!cursor.isAfterLast()) {
+            String a = cursor.getString(cursor.getColumnIndex("address"));
+            String b = cursor.getColumnName(cursor.getColumnIndex("body"));
+            messages.add(new Message(a, "", b));
+        }
+        cursor.close();
+        //address, body, creator(?)
+
+
         mAdapter = new ConversationAdapter(this, messages);
 
         listview.setAdapter(mAdapter);
