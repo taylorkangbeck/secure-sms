@@ -165,7 +165,7 @@ class SMSSender {
             }
             else
             try {
-                //continue key exhange//encrypted = EncryptionHelper.encryptBody(message, recipientsPubKey);
+                //continue key exchange//encrypted = EncryptionHelper.encryptBody(message, recipientsPubKey);
             } catch (Exception e) {
                 e.printStackTrace();
             }
