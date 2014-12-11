@@ -2,6 +2,7 @@ package edu.vanderbilt.cs285.secure_sms;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,21 +17,12 @@ import java.util.ArrayList;
  * Created by Taylor on 12/7/2014.
  */
 public class ConversationAdapter extends BaseAdapter    {
-
-    private Context mContext;
+    private LayoutInflater inflater;
     private ArrayList<Message> messages;
-    private static int myPosition;
-
-    public ConversationAdapter(Context c) {
-        mContext = c;
-        messages = new ArrayList<Message>();
-        myPosition = 0;
-    }
 
     public ConversationAdapter(Context c, ArrayList<Message> msgs) {
-        mContext = c;
+        inflater  = LayoutInflater.from(c);
         messages = msgs;
-        myPosition = 0;
     }
 
     public void addMsg(Message msg) {
@@ -52,27 +44,34 @@ public class ConversationAdapter extends BaseAdapter    {
     // create a new view for each item referenced by the Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         View itemView;
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        MessageViewHolder holder;
         if (convertView == null) {
-            itemView = inflater.inflate(R.layout.message_item, null);
-            TextView senderView = (TextView) itemView.findViewById(R.id.msgSender);
-            TextView bodyView = (TextView) itemView.findViewById(R.id.msgBody);
-            LinearLayout msgItem = (LinearLayout) itemView.findViewById(R.id.msgitem);
-
-
-            Message curMsg = messages.get(myPosition);
-            myPosition++;
-            senderView.setText(curMsg.getSender());
-            bodyView.setText(curMsg.getBody());
-            if(curMsg.isSecure()) {
-                msgItem.setBackgroundColor(Color.GREEN);
-            }
-
+            itemView = inflater.inflate(R.layout.message_item, parent, false);
+            holder = new MessageViewHolder();
+            holder.senderView = (TextView) itemView.findViewById(R.id.msgSender);
+            holder.bodyView = (TextView) itemView.findViewById(R.id.msgBody);
+            holder.msgItem = (LinearLayout) itemView.findViewById(R.id.msgitem);
+            itemView.setTag(holder);
         } else {
-            itemView = (View) convertView;
+            itemView = convertView;
+            holder = (MessageViewHolder) itemView.getTag();
         }
+
+        Message curMsg = messages.get(position);
+        holder.senderView.setText(curMsg.getSender());
+        holder.bodyView.setText(curMsg.getBody());
+        if(curMsg.isSecure()) {
+            holder.msgItem.setBackgroundColor(Color.GREEN);
+        }
+
         return itemView;
+    }
+
+    // private helper class to hold View contents
+    private class MessageViewHolder {
+        public TextView senderView;
+        public TextView bodyView;
+        public LinearLayout msgItem;
     }
 
 }

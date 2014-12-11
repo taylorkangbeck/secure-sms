@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 
 public class ConversationActivity extends Activity {
@@ -30,6 +31,9 @@ public class ConversationActivity extends Activity {
     ConversationAdapter mAdapter;
     MainHandler handler;
 
+    // moved from ConversationAdapter
+    private ArrayList<Message> messages;
+
     public Messenger messenger = new Messenger(new MainHandler(this));
 
     @Override
@@ -40,7 +44,11 @@ public class ConversationActivity extends Activity {
         handler = new MainHandler(this);
 
         listview = (ListView) findViewById(R.id.oneConvoListView);
-        mAdapter = new ConversationAdapter(this);
+
+        // moved from ConversationAdapter
+        messages = new ArrayList<Message>();
+        mAdapter = new ConversationAdapter(this, messages);
+
         listview.setAdapter(mAdapter);
         SMSBroadcastReceiver.setMessenger(messenger);
 
