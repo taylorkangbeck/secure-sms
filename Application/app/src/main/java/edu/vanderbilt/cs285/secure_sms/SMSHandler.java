@@ -26,6 +26,8 @@ class SMSHandler {
 
     public boolean handleMessage(String message, String sender, Context context, Intent i) {
             if(SMSTypeDecoder.isSymmetricKey(message)) {
+                Toast.makeText(context, "is Symmmetric Key "
+                        , Toast.LENGTH_LONG).show();
                 handleSymmetricKeyMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isInitKeyExchange(message)) {
@@ -34,8 +36,8 @@ class SMSHandler {
                 handleKeyExchangeMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
-                //Toast.makeText(context, "received secure text "
-                  //      , Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "received secure text "
+                        , Toast.LENGTH_LONG).show();
                 handleEncryptedMsg(message, sender, context);
                 return true;
             }
