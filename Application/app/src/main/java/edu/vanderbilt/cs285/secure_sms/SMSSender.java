@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
@@ -87,9 +88,8 @@ class SMSSender {
             sms.sendTextMessage(this.recipientNum, null, message, sentPI,
                     deliveredPI);
         } catch (IllegalArgumentException e) {
-            Log.e(TAG,
-                    "some information is not correct e.g. recipient's phone number",
-                    e);
+            Toast.makeText(context, "info not correct "
+                    + this.recipientNum, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -118,7 +118,8 @@ class SMSSender {
             if (pubMod.length() != 0 && pubExp.length() != 0) {
                 sendKeyExchangeSMS(this.recipientNum, pubMod + " " + pubExp, context);
             } else {
-                Log.e(TAG, "mod or exp of public key not found");
+                Toast.makeText(context, "mod or exp pub key not found "
+                       , Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -141,7 +142,9 @@ class SMSSender {
         // "sending a secure SMS, recipient is "+this.recipientNum+" original message is "+this.message);
         String encrypted;
         String symmetricKey = SymmetricEncryptor.getRecipientsSymmetricKey(this.recipientNum, context);
-        if(symmetricKey != null)
+        Toast.makeText(context, "Ths is the symmetricKey" +symmetricKey
+                , Toast.LENGTH_LONG).show();
+        if(symmetricKey != null && !symmetricKey.isEmpty())
         {
             try {
                 encrypted = EncryptionHelper.encryptBody(message, symmetricKey);
@@ -159,13 +162,13 @@ class SMSSender {
             RSAPublicKeySpec recipientsPubKey = AsymmetricEncrpytor.getRecipientsPublicKey(
                     this.recipientNum, context);
             if (recipientsPubKey == null) {
-                Log.e(TAG, "recipient's public key could not be retrieved for "
-                        + this.recipientNum);
+                Toast.makeText(context, "recipient's public key could not be retrieved for "
+                        + this.recipientNum, Toast.LENGTH_LONG).show();
                 sendKeyExchangeSMS(context);
             }
             else
             try {
-                //continue key exhange//encrypted = EncryptionHelper.encryptBody(message, recipientsPubKey);
+                sendSymmetricKey(context);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -180,6 +183,7 @@ class SMSSender {
     public void sendSymmetricKey(Context context) {
        try{
         byte [] key = SymmetricEncryptor.generateKey();
+        SymmetricEncryptor.saveSymmetricKey(new String(key), recipientNum, context);
         RSAPublicKeySpec recipientsPubKey = AsymmetricEncrpytor.getRecipientsPublicKey( this.recipientNum, context);
         message = EncryptionHelper.encryptAndEncodeBytes(key, recipientsPubKey);
         message = SMSTypeDecoder.calculateEncryptedKeyPrefix(message) + message;

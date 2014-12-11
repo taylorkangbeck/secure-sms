@@ -126,8 +126,8 @@ public class AsymmetricEncrpytor {
                 + pubExp + " for " + contactNum);
         // String recipient = prefs.getString(PREF_RECIPIENT_NUM, DEFAULT_PREF);
         if (!pubMod.isEmpty() && !pubExp.isEmpty()) {
-            byte[] pubModBA = Base64.decode(pubMod, Base64.DEFAULT);
-            byte[] pubExpBA = Base64.decode(pubExp, Base64.DEFAULT);
+            byte[] pubModBA = Base64.decode(pubMod, Base64.NO_WRAP);
+            byte[] pubExpBA = Base64.decode(pubExp, Base64.NO_WRAP);
             BigInteger pubModBI = new BigInteger(1, pubModBA); // 1 is added as
 
             BigInteger pubExpBI = new BigInteger(1, pubExpBA);

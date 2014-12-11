@@ -104,10 +104,7 @@ public class ConversationsListActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        else if (id == R.id.action_newsms) {
+        if (id == R.id.action_newsms) {
             Intent in = new Intent(getBaseContext(), SimpleSendSMSActivity.class);
             startActivity(in);
             return true;

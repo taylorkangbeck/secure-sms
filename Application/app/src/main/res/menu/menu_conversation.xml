@@ -4,4 +4,7 @@
         android:icon="@drawable/ic_lock_open_black_24dp"
         android:title="Encrypt Session"
         android:showAsAction="ifRoom" />
+    <item android:id="@+id/viewTheirFingerprint"
+        android:title="View Their Fingerprint"
+        android:showAsAction="never" />
 </menu>

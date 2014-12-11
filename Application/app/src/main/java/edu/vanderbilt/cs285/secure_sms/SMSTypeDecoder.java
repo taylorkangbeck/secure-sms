@@ -75,7 +75,7 @@ class SMSTypeDecoder {
             for (int i=0;i<HASH_ITERATIONS;i++) {
                 runningDigest = md.digest(runningDigest);
             }
-            return Base64.encodeToString(runningDigest, 0, byteCount, Base64.DEFAULT);
+            return Base64.encodeToString(runningDigest, 0, byteCount, Base64.NO_WRAP);
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         }
