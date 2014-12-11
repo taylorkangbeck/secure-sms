@@ -1,13 +1,15 @@
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.app.Activity;
-import android.database.Cursor;
-import android.net.Uri;
+import android.os.Handler;
 import android.os.Bundle;
+import android.os.Messenger;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -15,71 +17,60 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
+
 
 public class ConversationActivity extends Activity {
-//represents single conversation with another person, with tabs for insecure and secure messaging
+//represents single conversation with another person
 
-    String convoId;
     ListView listview;
     String recipient;
     Menu mOptionsMenu;
     boolean activeSession = false;
-    SimpleCursorAdapter adapter;
-    Cursor cursor;
+    ConversationAdapter mAdapter;
+    MainHandler handler;
+
+    public Messenger messenger = new Messenger(new MainHandler(this));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        //get convoId
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            convoId = extras.getString("CONVO_ID");
-            //Toast.makeText(ConversationActivity.this,convoId, Toast.LENGTH_SHORT).show();
-            String msgContent = extras.getString("msgContent");
-            toastDec(msgContent);
-        }
-
-
+        handler = new MainHandler(this);
 
         listview = (ListView) findViewById(R.id.oneConvoListView);
-        int[] tvIds = new int[]{R.id.msgSender, R.id.msgBody};
-
-        String[] qColumns = new String[]{"type","body"};
-
-        //Cursor cursor = getContentResolver().query(inboxUri, null, null, null, "date DESC");
-        cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + convoId, null, "date ASC");
-        cursor.moveToFirst();
-        recipient = cursor.getString(cursor.getColumnIndex("address"));
-        setTitle(recipient);
-        adapter = new SimpleCursorAdapter(this, R.layout.message_item, cursor, qColumns, tvIds);
-        listview.setAdapter(adapter);
-
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                //allow decryption by tapping
-                //Toast.makeText(getApplicationContext(), adapter.getItem(position).toString(), Toast.LENGTH_SHORT);
-
-                //TextView tv = (TextView) findViewById(v.getId());
-                //String text = tv.getText().toString();
+        mAdapter = new ConversationAdapter(this);
+        listview.setAdapter(mAdapter);
+        SMSBroadcastReceiver.setMessenger(messenger);
 
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            recipient = extras.getString("recipient");
 
+            if(extras.getParcelable("Message") != null) {
+                Message newMsg = extras.getParcelable("Message");
+                mAdapter.addMsg(newMsg);
             }
-        });
 
-        Button clickButton = (Button) findViewById(R.id.sendButton);
-        clickButton.setOnClickListener( new View.OnClickListener() {
+        }
+
+        setTitle(recipient);
+
+        Button sendButton = (Button) findViewById(R.id.sendButton);
+        sendButton.setOnClickListener( new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 EditText txt = (EditText) findViewById(R.id.textText);
                 if (activeSession) {
                     try {
-                        String txtToSend = EncryptionHelper.encryptBody(txt.getText().toString(), "11111111111111111");
-                        SMSSender sender = new SMSSender(recipient, txtToSend);
-                        sender.sendLongSMS(getApplicationContext());
+                        //String txtToSend = eh.encryptBody(txt.getText().toString(), "11111111111111111");
+                        String toSend = txt.getText().toString();
+                        SMSSender sender = new SMSSender(recipient, toSend);
+                        sender.sendSecureSMS(getApplicationContext(), toSend);
+                        mAdapter.addMsg(new Message("me", recipient, toSend, true));
                     } catch (Exception e) {
                         Toast.makeText(getApplicationContext(), "error encrypting", Toast.LENGTH_SHORT);
                     }
@@ -87,6 +78,7 @@ public class ConversationActivity extends Activity {
                 } else{
                     SMSSender sender = new SMSSender(recipient, txt.getText().toString());
                     sender.sendLongSMS(getApplicationContext());
+                    mAdapter.addMsg(new Message("me", recipient, txt.getText().toString(), false));
                 }
             }
         });
@@ -124,15 +116,36 @@ public class ConversationActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void toastDec(String sms) {
-        if (activeSession) {
-            try {
-                String dec = EncryptionHelper.decryptBody(sms, "1111111111111111");
-                Toast.makeText(getApplicationContext(), dec, Toast.LENGTH_SHORT);
-                //tv.setText(dec);
-            } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "error decrypting", Toast.LENGTH_SHORT);
+    private static class MainHandler extends Handler {
+        WeakReference<ConversationActivity> wr;
+
+        MainHandler(ConversationActivity activity){
+            wr = new WeakReference<ConversationActivity> (activity);
+        }
+
+        @Override
+        public void handleMessage (android.os.Message message){
+            ConversationActivity activity = wr.get();
+            if (activity != null) {
+                switch(message.what) {
+                    case 1:
+                        activity.handleNewMessage(((Message) message.obj));
+                        break;
+                    default:
+                        super.handleMessage(message);
+                }
+
+            }
+            else{
+                Log.i("MainActivity", "activity returned null");
             }
         }
+
+    }
+
+    private void handleNewMessage(Message obj) {
+        Toast.makeText(getApplicationContext(),"This is a test" + obj.getBody(), Toast.LENGTH_LONG).show();
+        mAdapter.addMsg(obj);
+        mAdapter.notifyDataSetChanged();
     }
 }
