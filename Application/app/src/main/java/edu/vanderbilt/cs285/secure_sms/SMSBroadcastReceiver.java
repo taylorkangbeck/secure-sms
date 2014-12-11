@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class SMSBroadcastReceiver extends BroadcastReceiver {
     private final String TAG = "SmsReceiver";
-    static Messenger myMessenger;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -57,7 +57,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
                     //fill the entire message body into Intent
                     in.putExtra("msgContent", message);
 
-                    Message thisMsg = new Message(sender, "me", message, isEnc);
+/*                    Message thisMsg = new Message(sender, "me", message, isEnc);
                     android.os.Message actMessage = android.os.Message.obtain(null, 1);
                     actMessage.obj = thisMsg;
                     try{
@@ -65,7 +65,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
                     }
                     catch( RemoteException e){
                         e.printStackTrace();
-                    }
+                    }*/
                     
                     //Bundle b = new Bundle();
                     //b.putParcelable("Message", thisMsg);
@@ -87,9 +87,6 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
             handleDeliveredSms(context);
         }
 
-    }
-    public static void setMessenger( Messenger messenger) {
-        myMessenger = messenger;
     }
 
     private void handleSentSms(Context context) {
