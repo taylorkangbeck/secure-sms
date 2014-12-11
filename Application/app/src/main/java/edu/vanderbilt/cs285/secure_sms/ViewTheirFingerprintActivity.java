@@ -6,16 +6,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.RSAPublicKeySpec;
 
 
-public class ViewMyFingerprintActivity extends Activity {
+public class ViewTheirFingerprintActivity extends Activity {
     public static final String PREFS_MY_KEYS = "MyKeys";
 
     private static final String PREF_PUBLIC_MOD = "PublicModulus";
@@ -30,42 +28,36 @@ public class ViewMyFingerprintActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_my_fingerprint);
 
+        setContentView(R.layout.activity_view_their_fingerprint);
         key = (TextView) findViewById(R.id.editText);
 
-        // get my public key information
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_MY_KEYS,
+        String recipientNumber =  getIntent().getStringExtra("theirNumber");
+
+        // get their public key information
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(recipientNumber,
                 Context.MODE_PRIVATE);
+
         String pubMod = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
         String pubExp = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
 
-        // if I haven't a public key yet, generate one
-        if(pubMod.isEmpty()) {
+        // if you have a public key for them
+        if(!(pubMod.isEmpty())) {
+            // theirPubKey will be the modulus with the exponent appended onto it
+            String theirPubKey = pubMod + pubExp;
+
+            // create a hash of myPubKey, to make it easier an easier format
+            MessageDigest messageDigest = null;
             try {
-                AsymmetricEncrpytor.init(getApplicationContext());
-            } catch (Exception e) {
-                key.setText(e.toString());
+                messageDigest = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
             }
-            // call it again, after initializing
-            pubMod = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
-            pubExp = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
+            messageDigest.update(theirPubKey.getBytes());
+            // set theirPubKey to the hash of itself
+            theirPubKey = toHexFormatted(messageDigest.digest());
+            key.setText(theirPubKey);
         }
-        // myPubkey will be the modulus with the exponent appended onto it
-        String myPubKey = pubMod + pubExp;
-
-        // create a hash of myPubKey, to make it easier an easier format
-        MessageDigest messageDigest = null;
-        try {
-            messageDigest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        messageDigest.update(myPubKey.getBytes());
-        // set myPubKey to the hash of itself
-        myPubKey = toHexFormatted(messageDigest.digest());
-
-        key.setText(myPubKey);
     }
 
     // modified from http://stackoverflow.com/a/943963

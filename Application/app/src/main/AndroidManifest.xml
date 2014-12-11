@@ -40,6 +40,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.vanderbilt.cs285.secure_sms.ConversationsListActivity" />
         </activity>
+        <activity
+            android:name=".ViewTheirFingerprintActivity"
+            android:label="@string/title_activity_view_their_fingerprint"
+            android:parentActivityName=".ConversationActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.vanderbilt.cs285.secure_sms.ConversationActivity" />
+        </activity>
     </application>
 
 </manifest>

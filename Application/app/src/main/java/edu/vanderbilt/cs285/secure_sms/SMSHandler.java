@@ -30,7 +30,7 @@ class SMSHandler {
             }
             else if(SMSTypeDecoder.isInitKeyExchange(message)) {
                 Toast.makeText(context, "received initial key exchange "
-                        , Toast.LENGTH_LONG).show();;
+                        , Toast.LENGTH_LONG).show();
                 handleKeyExchangeMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
