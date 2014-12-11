@@ -55,8 +55,8 @@ public class AsymmetricEncrpytor {
     //RSA encryption
     public static byte[] encryptBytes(byte[] data, RSAPublicKeySpec recipientsPubKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
-        KeyFactory keyFactory=KeyFactory.getInstance("RSA");
-        PublicKey publicKey=keyFactory.generatePublic(recipientsPubKey);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(recipientsPubKey);
         cipher.init(Cipher.ENCRYPT_MODE,publicKey );
         return cipher.doFinal(data);
     }
@@ -64,9 +64,9 @@ public class AsymmetricEncrpytor {
 
     public static byte[] decryptBytes(byte[] data, RSAPrivateKeySpec recipientsPrivKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
-        KeyFactory keyFactory=KeyFactory.getInstance("RSA");
-        PublicKey publicKey=keyFactory.generatePublic(recipientsPrivKey);
-        cipher.init(Cipher.ENCRYPT_MODE,publicKey );
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PrivateKey privateKey = keyFactory.generatePrivate(recipientsPrivKey);
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
         return cipher.doFinal(data);
     }
 
