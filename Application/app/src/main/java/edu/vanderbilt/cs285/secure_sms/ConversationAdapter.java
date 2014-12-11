@@ -19,15 +19,18 @@ public class ConversationAdapter extends BaseAdapter    {
 
     private Context mContext;
     private ArrayList<Message> messages;
+    private static int myPosition;
 
     public ConversationAdapter(Context c) {
         mContext = c;
         messages = new ArrayList<Message>();
+        myPosition = 0;
     }
 
     public ConversationAdapter(Context c, ArrayList<Message> msgs) {
         mContext = c;
         messages = msgs;
+        myPosition = 0;
     }
 
     public void addMsg(Message msg) {
@@ -43,7 +46,7 @@ public class ConversationAdapter extends BaseAdapter    {
     }
 
     public long getItemId(int index) {
-        return 0;
+        return index;
     }
 
     // create a new view for each item referenced by the Adapter
@@ -58,7 +61,8 @@ public class ConversationAdapter extends BaseAdapter    {
             LinearLayout msgItem = (LinearLayout) itemView.findViewById(R.id.msgitem);
 
 
-            Message curMsg = messages.get(position);
+            Message curMsg = messages.get(myPosition);
+            myPosition++;
             senderView.setText(curMsg.getSender());
             bodyView.setText(curMsg.getBody());
             if(curMsg.isSecure()) {
