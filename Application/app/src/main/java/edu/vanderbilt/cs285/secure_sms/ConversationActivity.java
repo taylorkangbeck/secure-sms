@@ -152,7 +152,9 @@ public class ConversationActivity extends Activity {
     }
 
     private void handleNewMessage(Message obj) {
-        Toast.makeText(getApplicationContext(),"This is a test" + obj.getBody(), Toast.LENGTH_LONG).show();
-        mAdapter.addMsg(obj);
+        //Toast.makeText(getApplicationContext(),"This is a test" + obj.getBody(), Toast.LENGTH_LONG).show();
+        if(obj.getSender().equals(recipient)) {
+            mAdapter.addMsg(obj);
+        }
     }
 }
