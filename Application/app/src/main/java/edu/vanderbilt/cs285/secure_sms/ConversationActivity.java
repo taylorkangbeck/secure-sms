@@ -1,6 +1,8 @@
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ public class ConversationActivity extends Activity {
     boolean activeSession = false;
     ConversationAdapter mAdapter;
     MainHandler handler;
+    String thread_id;
 
     // moved from ConversationAdapter
     private ArrayList<Message> messages;
@@ -46,24 +49,35 @@ public class ConversationActivity extends Activity {
 
         listview = (ListView) findViewById(R.id.oneConvoListView);
 
-        // moved from ConversationAdapter
-        messages = new ArrayList<Message>();
-        mAdapter = new ConversationAdapter(this, messages);
-
-        listview.setAdapter(mAdapter);
-        SMSBroadcastReceiver.setMessenger(messenger);
-
-
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             recipient = extras.getString("recipient");
-
-            if(extras.getParcelable("Message") != null) {
-                Message newMsg = extras.getParcelable("Message");
-                mAdapter.addMsg(newMsg);
-            }
-
+            thread_id = extras.getString("convoId");
         }
+
+        // moved from ConversationAdapter
+        messages = new ArrayList<Message>();
+
+        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date ASC");
+        if(cursor != null && cursor.moveToFirst()) {
+            while(!cursor.isAfterLast()) {
+                String a = cursor.getString(cursor.getColumnIndex("address"));
+                if(cursor.getString(cursor.getColumnIndex("type")).equals("2"))
+                    a = "me";
+                String b = cursor.getString(cursor.getColumnIndex("body"));
+                messages.add(new Message(a, "", b));
+                cursor.moveToNext();
+            }
+            cursor.close();
+        }
+
+        mAdapter = new ConversationAdapter(this, messages);
+        listview.setAdapter(mAdapter);
+
+        SMSBroadcastReceiver.setMessenger(messenger);
+
+
+
 
         setTitle(recipient);
 
