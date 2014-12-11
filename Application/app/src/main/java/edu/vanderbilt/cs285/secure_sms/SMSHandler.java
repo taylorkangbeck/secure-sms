@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Created by Jay on 12/2/2014.
@@ -28,23 +29,27 @@ class SMSHandler {
                 handleSymmetricKeyMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isInitKeyExchange(message)) {
-                Log.i(TAG, "message received is a key exchange message");
+                Toast.makeText(context, "received initial key exchange "
+                        , Toast.LENGTH_LONG).show();;
                 handleKeyExchangeMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
-                Log.i(TAG, "received a secure text message");
+                Toast.makeText(context, "received secure text "
+                        , Toast.LENGTH_LONG).show();
                 handleEncryptedMsg(message, sender, context);
                 return true;
             }
             else if(SMSTypeDecoder.isReplyKeyExchange(message)){
-                Log.i(TAG, "received a secure text message");
+                Toast.makeText(context, "received key in return "
+                        , Toast.LENGTH_LONG).show();
                 handleReplyKeyExchangeMsg(message, sender, context);
                 return true;
             }
             else if(SMSTypeDecoder.isEndSession(message)) {
             }
             else {
-                Log.i(TAG, "Message not recognised, not doing anything");
+                Toast.makeText(context, "unrecognized message "
+                        , Toast.LENGTH_LONG).show();
             }
         return false;
         }
@@ -81,7 +86,6 @@ class SMSHandler {
 
 
     private void handleSymmetricKeyMsg(String message, String sender, Context context, Intent i) {
-            String contactNum = sender;
             String symmetricKeyEncrypted = message.substring(SMSTypeDecoder.PREFIX_SIZE);
             String PREFS = "MyKeys";
             SharedPreferences prefs = context.getSharedPreferences(PREFS,
@@ -95,9 +99,9 @@ class SMSHandler {
             if (!privateMod.equals(DEFAULT_PREF)
                     && !privateExp.equals(DEFAULT_PREF)) {
                 byte[] recipientPrivateModBA = Base64.decode(privateMod,
-                        Base64.DEFAULT);
+                        Base64.NO_WRAP);
                 byte[] recipientPrivateExpBA = Base64.decode(privateExp,
-                        Base64.DEFAULT);
+                        Base64.NO_WRAP);
                 BigInteger recipientPrivateMod = new BigInteger(
                         recipientPrivateModBA);
                 BigInteger recipientPrivateExp = new BigInteger(
@@ -158,9 +162,9 @@ class SMSHandler {
             if(symmetricKey != null)
             {
                 try {
-                    decrypted = EncryptionHelper.decryptBody(message, symmetricKey);
+                    decrypted = EncryptionHelper.decryptBody(messageEncrypted, symmetricKey);
 
-                    Message thisMsg = new Message(sender, "me", message, true);
+                    Message thisMsg = new Message(sender, "me", decrypted, true);
                     android.os.Message actMessage = android.os.Message.obtain(null, 1);
                     actMessage.obj = thisMsg;
                     SMSBroadcastReceiver.myMessenger.send(actMessage);
