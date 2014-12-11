@@ -35,6 +35,7 @@ public class ConversationAdapter extends BaseAdapter    {
 
     public void addMsg(Message msg) {
         messages.add(msg);
+        notifyDataSetChanged();
     }
 
     public int getCount() {
@@ -61,8 +62,8 @@ public class ConversationAdapter extends BaseAdapter    {
             LinearLayout msgItem = (LinearLayout) itemView.findViewById(R.id.msgitem);
 
 
-            Message curMsg = messages.get(myPosition);
-            myPosition++;
+            Message curMsg = messages.get(messages.size()-1);
+            //myPosition++;
             senderView.setText(curMsg.getSender());
             bodyView.setText(curMsg.getBody());
             if(curMsg.isSecure()) {
