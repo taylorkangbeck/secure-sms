@@ -27,6 +27,7 @@ public class ConversationAdapter extends BaseAdapter    {
 
     public void addMsg(Message msg) {
         messages.add(msg);
+        notifyDataSetChanged();
     }
 
     public int getCount() {

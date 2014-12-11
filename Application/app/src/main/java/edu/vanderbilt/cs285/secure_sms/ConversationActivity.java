@@ -74,7 +74,6 @@ public class ConversationActivity extends Activity {
                 EditText txt = (EditText) findViewById(R.id.textText);
                 if (activeSession) {
                     try {
-                        //String txtToSend = eh.encryptBody(txt.getText().toString(), "11111111111111111");
                         String toSend = txt.getText().toString();
                         SMSSender sender = new SMSSender(recipient, toSend);
                         sender.sendSecureSMS(getApplicationContext(), toSend);
@@ -88,6 +87,7 @@ public class ConversationActivity extends Activity {
                     sender.sendLongSMS(getApplicationContext());
                     mAdapter.addMsg(new Message("me", recipient, txt.getText().toString(), false));
                 }
+                txt.setText("");
             }
         });
     }
@@ -154,6 +154,5 @@ public class ConversationActivity extends Activity {
     private void handleNewMessage(Message obj) {
         Toast.makeText(getApplicationContext(),"This is a test" + obj.getBody(), Toast.LENGTH_LONG).show();
         mAdapter.addMsg(obj);
-        mAdapter.notifyDataSetChanged();
     }
 }
