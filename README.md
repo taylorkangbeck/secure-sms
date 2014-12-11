@@ -1,4 +1,4 @@
 secure-sms
 ==========
 
-Cryptographic messaging over SMS
+An Android client for cryptographic messaging over SMS
