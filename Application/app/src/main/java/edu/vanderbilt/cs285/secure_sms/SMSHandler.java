@@ -149,7 +149,7 @@ class SMSHandler {
                     smsSender.sendReplyKeyExchangeSMS(sender, pubMod + " " + pubExp, context);
 
                 } catch (Exception e) {
-                    // handle exception
+                    e.printStackTrace();
                 }
             }
         }
