@@ -51,7 +51,7 @@ public class ConversationActivity extends Activity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             recipient = extras.getString("recipient");
-            thread_id = extras.getString("thread_id");
+            thread_id = extras.getString("convoId");
         }
 
         // moved from ConversationAdapter
@@ -61,17 +61,16 @@ public class ConversationActivity extends Activity {
         //messages.add(new Message("me", "you", "hi"));
 
         //Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), new String[]{"date", "address", "body"},  "thread_id=" + thread_id, null, "date DESC");
-        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date DESC");
+        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date ASC");
         Toast.makeText(this, thread_id, Toast.LENGTH_SHORT).show();
         if(cursor != null && cursor.moveToFirst()) {
-            //while(!cursor.isAfterLast()) {
-            String a = cursor.getString(cursor.getColumnIndex("address"));
-            String b = cursor.getColumnName(cursor.getColumnIndex("body"));
-            messages.add(new Message(a, "", b));
-            Toast.makeText(this, b, Toast.LENGTH_SHORT).show();
-            //cursor.moveToNext();
-            //}
-            //cursor.close();
+            while(!cursor.isAfterLast()) {
+                String a = cursor.getString(cursor.getColumnIndex("address"));
+                String b = cursor.getString(cursor.getColumnIndex("body"));
+                messages.add(new Message(a, "", b));
+                cursor.moveToNext();
+            }
+            cursor.close();
         }
         //address, body, creator(?)
         Toast.makeText(getApplicationContext(), String.valueOf(messages.size()), Toast.LENGTH_SHORT).show();
