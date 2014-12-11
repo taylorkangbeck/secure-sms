@@ -2,7 +2,6 @@ package edu.vanderbilt.cs285.secure_sms;
 
 import java.math.BigInteger;
 import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 
 //import org.apache.commons.codec.binary.Base64;
 import android.util.Base64;
@@ -22,22 +21,23 @@ class SMSHandler {
 
     private final String SYMMETRIC_KEY = "SymmetricKey";
 
-        EncryptionHelper publicEncryptionHelper;
-        EncryptionHelper symmetricEncryptionHelper;
-        private String sender = "";
-
 
     public boolean handleMessage(String message, String sender, Context context, Intent i) {
-            if(SMSTypeDecoder.isEncrypted(message)) {
+            if(SMSTypeDecoder.isSymmetricKey(message)) {
                 handleSymmetricKeyMsg(message, sender, context, i);
             }
-            else if(SMSTypeDecoder.isKeyExchange(message)) {
+            else if(SMSTypeDecoder.isInitKeyExchange(message)) {
                 Log.i(TAG, "message received is a key exchange message");
                 handleKeyExchangeMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
                 Log.i(TAG, "received a secure text message");
                 handleEncryptedMsg(message, sender, context);
+                return true;
+            }
+            else if(SMSTypeDecoder.isReplyKeyExchange(message)){
+                Log.i(TAG, "received a secure text message");
+                handleReplyKeyExchangeMsg(message, sender, context);
                 return true;
             }
             else if(SMSTypeDecoder.isEndSession(message)) {
@@ -48,8 +48,38 @@ class SMSHandler {
         return false;
         }
 
-    
-        private void handleSymmetricKeyMsg(String message, String sender, Context context, Intent i) {
+    private void handleReplyKeyExchangeMsg(String message, String sender, Context context) {
+        String contactNum = sender;
+        String[] parts = message.substring(SMSTypeDecoder.PREFIX_SIZE).split(" "); // expected structure of the key
+        // exchange message:
+        if (parts.length == 2) {
+            String recipientPubModBase64Str = parts[1];
+            String recipientPubExpBase64Str = parts[2];
+
+
+
+            SharedPreferences prefs = context.getSharedPreferences(contactNum,
+                    Context.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEditor = prefs.edit();
+
+            String PREF_PUBLIC_MOD = "PublicModulus";
+            prefsEditor.putString(PREF_PUBLIC_MOD, recipientPubModBase64Str);
+            String PREF_PUBLIC_EXP = "PublicExponent";
+            prefsEditor.putString(PREF_PUBLIC_EXP, recipientPubExpBase64Str);
+            prefsEditor.apply();
+
+            try {
+                SMSSender smsSender = new SMSSender(sender);
+                smsSender.sendSymmetricKey(context);
+
+            } catch (Exception e) {
+                // handle exception
+            }
+        }
+    }
+
+
+    private void handleSymmetricKeyMsg(String message, String sender, Context context, Intent i) {
             String contactNum = sender;
             String symmetricKeyEncrypted = message.substring(SMSTypeDecoder.PREFIX_SIZE);
             String PREFS = "MyKeys";
@@ -60,12 +90,12 @@ class SMSHandler {
             String PREF_PRIVATE_MOD = "PrivateModulus";
             String privateMod = prefs.getString(PREF_PRIVATE_MOD, DEFAULT_PREF);
             String PREF_PRIVATE_EXP = "PrivateExponent";
-            String priavteExp = prefs.getString(PREF_PRIVATE_EXP, DEFAULT_PREF);
+            String privateExp = prefs.getString(PREF_PRIVATE_EXP, DEFAULT_PREF);
             if (!privateMod.equals(DEFAULT_PREF)
-                    && !priavteExp.equals(DEFAULT_PREF)) {
+                    && !privateExp.equals(DEFAULT_PREF)) {
                 byte[] recipientPrivateModBA = Base64.decode(privateMod,
                         Base64.DEFAULT);
-                byte[] recipientPrivateExpBA = Base64.decode(priavteExp,
+                byte[] recipientPrivateExpBA = Base64.decode(privateExp,
                         Base64.DEFAULT);
                 BigInteger recipientPrivateMod = new BigInteger(
                         recipientPrivateModBA);
@@ -75,7 +105,7 @@ class SMSHandler {
                         recipientPrivateMod, recipientPrivateExp);
                 try {
                     String symmetricKey = EncryptionHelper.decryptBody(symmetricKeyEncrypted, recipientPrivateKeySpec);
-
+                    SymmetricEncryptor.saveSymmetricKey(symmetricKey,context);
                 } catch (Exception e) {
                 }
             }
@@ -94,12 +124,6 @@ class SMSHandler {
                 String recipientPubExpBase64Str = parts[2];
 
 
-                byte[] recipientPubModBA = Base64.decode(recipientPubModBase64Str,
-                        Base64.DEFAULT);
-                byte[] recipientPubExpBA = Base64.decode(recipientPubExpBase64Str,
-                        Base64.DEFAULT);
-                BigInteger recipientPubMod = new BigInteger(recipientPubModBA);
-                BigInteger recipientPubExp = new BigInteger(recipientPubExpBA);
 
                 SharedPreferences prefs = context.getSharedPreferences(contactNum,
                         Context.MODE_PRIVATE);
@@ -109,14 +133,15 @@ class SMSHandler {
                 prefsEditor.putString(PREF_PUBLIC_MOD, recipientPubModBase64Str);
                 String PREF_PUBLIC_EXP = "PublicExponent";
                 prefsEditor.putString(PREF_PUBLIC_EXP, recipientPubExpBase64Str);
-                // prefsEditor.putString(PREF_PHONE_NUMBER, recipient);
                 prefsEditor.apply();
 
 
-                //ready to encrypt symmetric key
+                //reply public key
                 try {
+                    String pubMod = AsymmetricEncrpytor.getPubMod(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
+                    String pubExp = AsymmetricEncrpytor.getPubExp(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
                     SMSSender smsSender = new SMSSender(sender);
-                    smsSender.sendSymmetricKey(context);
+                    smsSender.sendReplyKeyExchangeSMS(sender,pubMod + " " + pubExp, context);
 
                 } catch (Exception e) {
                     // handle exception

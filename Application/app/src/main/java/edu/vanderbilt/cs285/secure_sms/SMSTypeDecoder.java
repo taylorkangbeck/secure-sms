@@ -14,15 +14,19 @@ class SMSTypeDecoder {
     private static final int PREFIX_BYTES    = 3;
     public  static final int PREFIX_SIZE     = 4;
 
-    public static boolean isKeyExchange(String message) {
+    public static boolean isInitKeyExchange(String message) {
         return verifyPrefix("?TSK", message);
+    }
+
+    public static boolean isReplyKeyExchange(String message) {
+        return verifyPrefix("?TRK", message);
     }
 
     public static boolean isEncryptedMessage(String message) {
         return verifyPrefix("?TSM", message);
     }
 
-    public static boolean isEncrypted(String message) {
+    public static boolean isSymmetricKey(String message) {
         return verifyPrefix("?TSP", message);
     }
 
@@ -30,6 +34,9 @@ class SMSTypeDecoder {
         return verifyPrefix("?TSE", message);
     }
 
+    public static String calculateReplyKeyExchangePrefix(String message){
+        return calculatePrefix(("?TRK" + message).getBytes(), PREFIX_BYTES);
+    }
     public static String calculateKeyExchangePrefix(String message) {
         return calculatePrefix(("?TSK" + message).getBytes(), PREFIX_BYTES);
     }

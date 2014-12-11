@@ -33,17 +33,17 @@ class EncryptionHelper {
     public static String encryptBody(String message, String symmetricKey) throws Exception {
 
         byte[] encrypted = SymmetricEncryptor.encryptBytes(symmetricKey.getBytes(), message.getBytes());
-        return encodeToString(encrypted, Base64.DEFAULT);
+        return encodeToString(encrypted, Base64.NO_WRAP);
     }
 
     public static String encryptAndEncodeBytes(byte[] data, RSAPublicKeySpec recipientsPubKey) throws Exception {
         byte[] encrypted = AsymmetricEncrpytor.encryptBytes(data, recipientsPubKey);
-        return encodeToString(encrypted, Base64.DEFAULT);
+        return encodeToString(encrypted, Base64.NO_WRAP);
     }
 
     public static String decryptBody(String body, RSAPrivateKeySpec recipientPrivateKeySpec) throws Exception {
         try{
-            byte[] decodedBody = decode(body, Base64.DEFAULT);
+            byte[] decodedBody = decode(body, Base64.NO_WRAP);
             return new String(AsymmetricEncrpytor.decryptBytes(decodedBody, recipientPrivateKeySpec));
         } catch(IOException e) {
             throw new IOException("Bad Base64 Encoding...", e);
@@ -52,7 +52,7 @@ class EncryptionHelper {
     }
 
     public static String decryptBody(String message, String symmetricKey) throws Exception {
-        byte[] decodedBody = decode(message, Base64.DEFAULT);
+        byte[] decodedBody = decode(message, Base64.NO_WRAP);
         return new String(SymmetricEncryptor.decryptBytes( symmetricKey.getBytes(), decodedBody));
     }
 }

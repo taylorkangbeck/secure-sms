@@ -106,6 +106,8 @@ class SMSSender {
 
     }
 
+
+
     void sendKeyExchangeSMS(Context context) {
         if (this.recipientNum==null || this.recipientNum.isEmpty()) {
             Log.e(TAG, "Recipient number is not set: "+this.recipientNum);
@@ -120,6 +122,20 @@ class SMSSender {
             }
         }
     }
+
+    void sendReplyKeyExchangeSMS(String recipient, String key,
+                            Context context) {
+        String message = SMSTypeDecoder.calculateReplyKeyExchangePrefix(key) + key;
+        this.recipientNum = recipient;
+        this.message = message;
+        if (this.message.length() > 160) {
+            sendLongSMS(context);
+        } else {
+            sendSMS(context);
+        }
+
+    }
+
 
     public void sendSecureSMS(Context context, String message) {
         // "sending a secure SMS, recipient is "+this.recipientNum+" original message is "+this.message);
