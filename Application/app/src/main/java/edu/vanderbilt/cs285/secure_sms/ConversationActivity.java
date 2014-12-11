@@ -1,6 +1,8 @@
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Bundle;
 import android.os.Messenger;
@@ -30,6 +32,7 @@ public class ConversationActivity extends Activity {
     boolean activeSession = false;
     ConversationAdapter mAdapter;
     MainHandler handler;
+    String thread_id;
 
     // moved from ConversationAdapter
     private ArrayList<Message> messages;
@@ -45,24 +48,26 @@ public class ConversationActivity extends Activity {
 
         listview = (ListView) findViewById(R.id.oneConvoListView);
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            recipient = extras.getString("recipient");
+            thread_id = extras.getString("thread_id");
+        }
+
         // moved from ConversationAdapter
         messages = new ArrayList<Message>();
+
+        Uri inboxUri = Uri.parse("content://sms/conversations/" + thread_id);
+        Cursor cursor = getContentResolver().query(inboxUri, null, null, null, "date DESC");
+        cursor.moveToFirst();
+        
         mAdapter = new ConversationAdapter(this, messages);
 
         listview.setAdapter(mAdapter);
         SMSBroadcastReceiver.setMessenger(messenger);
 
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            recipient = extras.getString("recipient");
 
-            if(extras.getParcelable("Message") != null) {
-                Message newMsg = extras.getParcelable("Message");
-                mAdapter.addMsg(newMsg);
-            }
-
-        }
 
         setTitle(recipient);
 
