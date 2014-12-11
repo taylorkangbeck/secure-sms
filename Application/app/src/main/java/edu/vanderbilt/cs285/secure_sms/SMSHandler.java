@@ -27,7 +27,7 @@ class SMSHandler {
         private String sender = "";
 
 
-    public void handleMessage(String message, String sender, Context context, Intent i) {
+    public boolean handleMessage(String message, String sender, Context context, Intent i) {
             if(SMSTypeDecoder.isEncrypted(message)) {
                 handleSymmetricKeyMsg(message, sender, context, i);
             }
@@ -38,12 +38,14 @@ class SMSHandler {
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
                 Log.i(TAG, "received a secure text message");
                 handleEncryptedMsg(message, sender, context);
+                return true;
             }
             else if(SMSTypeDecoder.isEndSession(message)) {
             }
             else {
                 Log.i(TAG, "Message not recognised, not doing anything");
             }
+        return false;
         }
 
     

@@ -49,11 +49,11 @@ public class ConversationsListActivity extends Activity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Cursor cursor  = (Cursor) listview.getItemAtPosition(position);
-                String convoId = cursor.getString(cursor.getColumnIndex("thread_id"));
+                String convoId = cursor.getString(cursor.getColumnIndex("address"));
                 //Toast.makeText(ConversationsListActivity.this,convoId, Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(getBaseContext(), ConversationActivity.class);
-                intent.putExtra("CONVO_ID", convoId);
+                intent.putExtra("recipient", convoId);
                 startActivity(intent);
             }
         });

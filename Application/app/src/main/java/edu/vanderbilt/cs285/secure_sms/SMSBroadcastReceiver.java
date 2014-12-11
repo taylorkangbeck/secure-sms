@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -19,12 +21,12 @@ import java.util.Map;
 
 public class SMSBroadcastReceiver extends BroadcastReceiver {
     private final String TAG = "SmsReceiver";
-
+    static Messenger myMessenger;
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         SMSHandler smsHandler = new SMSHandler();
-        Intent in=new Intent(context,ConversationActivity.class);
+        Intent in=new Intent(context, ConversationActivity.class);
         in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         in.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -47,15 +49,33 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
 
 
                     //handle message for each sender
-                    //smsHandler.handleMessage(message, sender, context, intent);
+                    boolean isEnc = smsHandler.handleMessage(message, sender, context, intent);
+
                     //fill the sender's phone number into Intent
-                    //in.putExtra("originNum", sender);
+                    in.putExtra("originNum", sender);
 
                     //fill the entire message body into Intent
                     in.putExtra("msgContent", message);
 
+                    Message thisMsg = new Message(sender, "me", message, isEnc);
+                    android.os.Message actMessage = android.os.Message.obtain(null, 1);
+                    actMessage.obj = thisMsg;
+                    try{
+                        myMessenger.send(actMessage);
+                    }
+                    catch( RemoteException e){
+                        e.printStackTrace();
+                    }
+                    //Bundle b = new Bundle();
+                    //b.putParcelable("Message", thisMsg);
+                    //in.putExtras(b);
+
+
+
+
+
                     //start the DisplaySMSActivity.java
-                    context.startActivity(in);
+                    //context.startActivity(in);
                 }
             }
         } else if (action.equals(SMS_SENT)) {
@@ -67,7 +87,9 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
         }
 
     }
-
+    public static void setMessenger( Messenger messenger) {
+        myMessenger = messenger;
+    }
 
     private void handleSentSms(Context context) {
         switch (getResultCode()) {
