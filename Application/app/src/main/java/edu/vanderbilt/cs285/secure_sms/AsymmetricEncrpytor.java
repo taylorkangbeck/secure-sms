@@ -42,7 +42,7 @@ public class AsymmetricEncrpytor implements Encryptor {
     private AsymmetricEncrpytor(){
     }
     //generate RSA keypair information
-    private static void init(Context context) throws Exception {
+    public static void init(Context context) throws Exception {
         KeyPairGenerator kpg= KeyPairGenerator.getInstance("RSA");
         SecureRandom random = new SecureRandom();
         kpg.initialize(1024, random);
@@ -120,8 +120,8 @@ public class AsymmetricEncrpytor implements Encryptor {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_MY_KEYS,
                 Context.MODE_PRIVATE);
 
-        String pubMod = prefs.getString(PREF_PRIVATE_MOD, DEFAULT_PREF);
-        String pubExp = prefs.getString(PREF_PRIVATE_EXP, DEFAULT_PREF);
+        String pubMod = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
+        String pubExp = prefs.getString(PREF_PUBLIC_MOD, DEFAULT_PREF);
         // String recipient = prefs.getString(PREF_RECIPIENT_NUM, DEFAULT_PREF);
         if (!pubMod.isEmpty() && !pubExp.isEmpty()) {
             byte[] pubModBA = Base64.decode(pubMod, Base64.DEFAULT);
