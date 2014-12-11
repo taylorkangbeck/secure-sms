@@ -70,7 +70,7 @@ public class ConversationActivity extends Activity {
         mAdapter = new ConversationAdapter(this, messages);
         listview.setAdapter(mAdapter);
 
-        SMSBroadcastReceiver.setMessenger(messenger);
+        SMSHandler.setMessenger(messenger);
 
 
 

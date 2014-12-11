@@ -4,7 +4,12 @@ import java.math.BigInteger;
 import java.security.spec.RSAPrivateKeySpec;
 
 //import org.apache.commons.codec.binary.Base64;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 
 import android.content.Context;
@@ -19,9 +24,9 @@ import android.widget.Toast;
 class SMSHandler {
 
 
-        private final String TAG = SMSHandler.class.getName();
+    private final String TAG = SMSHandler.class.getName();
+    public static Messenger myMessenger;
 
-    private final String SYMMETRIC_KEY = "SymmetricKey";
 
 
     public boolean handleMessage(String message, String sender, Context context, Intent i) {
@@ -50,6 +55,15 @@ class SMSHandler {
             else if(SMSTypeDecoder.isEndSession(message)) {
             }
             else {
+                sendNotification("Plaintext Message From: "+ sender, message, context);
+                Message thisMsg = new Message(sender, "me", message, false);
+                android.os.Message actMessage = android.os.Message.obtain(null, 1);
+                actMessage.obj = thisMsg;
+                try {
+                    myMessenger.send(actMessage);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 Toast.makeText(context, "unrecognized message "
                         , Toast.LENGTH_LONG).show();
             }
@@ -118,6 +132,10 @@ class SMSHandler {
                 } catch (Exception e) {
                 }
             }
+        else{
+                Toast.makeText(context, "OK:Symmetric Key---whhhhattt"
+                        , Toast.LENGTH_LONG).show();
+            }
 
 
         }
@@ -169,16 +187,48 @@ class SMSHandler {
                 try {
                     decrypted = EncryptionHelper.decryptBody(messageEncrypted, symmetricKey) + "Waddup";
 
+                    sendNotification("Decrypted Message From: "+ sender, decrypted, context);
                     Message thisMsg = new Message(sender, "me", decrypted, true);
                     android.os.Message actMessage = android.os.Message.obtain(null, 1);
                     actMessage.obj = thisMsg;
-                    SMSBroadcastReceiver.myMessenger.send(actMessage);
+                    myMessenger.send(actMessage);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
             }
         }
+    public static void setMessenger( Messenger messenger) {
+        myMessenger = messenger;
+    }
+
+
+    private void sendNotification(String title, String message, Context context) {
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_lock_black_24dp)
+                        .setContentTitle(title)
+                        .setContentText(message);
+        //click to go to intent
+        Intent resultIntent = new Intent(context, ConversationActivity.class);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        context,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        mBuilder.setContentIntent(resultPendingIntent);
+        // Sets an ID for the notification
+        NotificationManager mNotifyMgr =
+                (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(1, mBuilder.build());
+
+
+    }
     }
 
 
