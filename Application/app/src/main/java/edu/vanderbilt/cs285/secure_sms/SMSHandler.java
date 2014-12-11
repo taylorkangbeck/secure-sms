@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.security.spec.RSAPrivateKeySpec;
 
 //import org.apache.commons.codec.binary.Base64;
+import android.os.RemoteException;
 import android.util.Base64;
 
 import android.content.Context;
@@ -141,7 +142,7 @@ class SMSHandler {
                     String pubMod = AsymmetricEncrpytor.getPubMod(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
                     String pubExp = AsymmetricEncrpytor.getPubExp(AsymmetricEncrpytor.PREFS_MY_KEYS, context);
                     SMSSender smsSender = new SMSSender(sender);
-                    smsSender.sendReplyKeyExchangeSMS(sender,pubMod + " " + pubExp, context);
+                    smsSender.sendReplyKeyExchangeSMS(sender, pubMod + " " + pubExp, context);
 
                 } catch (Exception e) {
                     // handle exception
@@ -158,6 +159,11 @@ class SMSHandler {
             {
                 try {
                     decrypted = EncryptionHelper.decryptBody(message, symmetricKey);
+
+                    Message thisMsg = new Message(sender, "me", message, true);
+                    android.os.Message actMessage = android.os.Message.obtain(null, 1);
+                    actMessage.obj = thisMsg;
+                    SMSBroadcastReceiver.myMessenger.send(actMessage);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
