@@ -60,18 +60,21 @@ public class ConversationActivity extends Activity {
         //messages.add(new Message("you", "me", "hello"));
         //messages.add(new Message("me", "you", "hi"));
 
-        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), new String[]{"date", "address", "body"},  "thread_id=" + thread_id, null, "date DESC");
-        cursor.moveToFirst();
-        //while(!cursor.isAfterLast()) {
+        //Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), new String[]{"date", "address", "body"},  "thread_id=" + thread_id, null, "date DESC");
+        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/"), null,  "thread_id=" + thread_id, null, "date DESC");
+        Toast.makeText(this, thread_id, Toast.LENGTH_SHORT).show();
+        if(cursor != null && cursor.moveToFirst()) {
+            //while(!cursor.isAfterLast()) {
             String a = cursor.getString(cursor.getColumnIndex("address"));
             String b = cursor.getColumnName(cursor.getColumnIndex("body"));
             messages.add(new Message(a, "", b));
+            Toast.makeText(this, b, Toast.LENGTH_SHORT).show();
             //cursor.moveToNext();
-        //}
-        //cursor.close();
-
+            //}
+            //cursor.close();
+        }
         //address, body, creator(?)
-        Toast.makeText(getApplicationContext(), messages.size(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), String.valueOf(messages.size()), Toast.LENGTH_SHORT).show();
         mAdapter = new ConversationAdapter(this, messages);
         listview.setAdapter(mAdapter);
 
