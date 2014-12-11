@@ -183,7 +183,7 @@ class SMSSender {
     public void sendSymmetricKey(Context context) {
        try{
         byte [] key = SymmetricEncryptor.generateKey();
-        SymmetricEncryptor.saveSymmetricKey(new String(key), context);
+        SymmetricEncryptor.saveSymmetricKey(recipientNum,  new String(key), context);
         RSAPublicKeySpec recipientsPubKey = AsymmetricEncrpytor.getRecipientsPublicKey( this.recipientNum, context);
         message = EncryptionHelper.encryptAndEncodeBytes(key, recipientsPubKey);
         message = SMSTypeDecoder.calculateEncryptedKeyPrefix(message) + message;

@@ -95,8 +95,9 @@ public class SymmetricEncryptor{
         return new String(symmetricKeyBytes);
     }
 
-    public static void saveSymmetricKey(String symmetricKey, Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_MY_KEYS,
+    public static void saveSymmetricKey(String symmetricKey, String contactNum,
+                                        Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(contactNum,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = prefs.edit();
         String keyBase64Str = Base64.encodeToString(symmetricKey.getBytes(),
