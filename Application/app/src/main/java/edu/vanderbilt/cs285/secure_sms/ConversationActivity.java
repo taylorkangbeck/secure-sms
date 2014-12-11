@@ -1,6 +1,7 @@
 package edu.vanderbilt.cs285.secure_sms;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Bundle;
 import android.os.Messenger;
@@ -109,9 +110,7 @@ public class ConversationActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_encrypt) {
+        if (id == R.id.action_encrypt) {
             if (activeSession) {
                 mOptionsMenu.findItem(R.id.action_encrypt).setIcon(R.drawable.ic_lock_open_black_24dp);
             }
@@ -121,7 +120,12 @@ public class ConversationActivity extends Activity {
             activeSession = !activeSession;
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        else {
+            Intent in = new Intent(getBaseContext(), ViewTheirFingerprintActivity.class);
+            in.putExtra("theirNumber", recipient);
+            startActivity(in);
+            return true;
+        }
     }
 
     private static class MainHandler extends Handler {
