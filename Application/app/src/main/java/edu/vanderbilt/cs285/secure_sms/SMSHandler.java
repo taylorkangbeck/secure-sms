@@ -30,12 +30,12 @@ class SMSHandler {
             }
             else if(SMSTypeDecoder.isInitKeyExchange(message)) {
                 Toast.makeText(context, "received initial key exchange "
-                        , Toast.LENGTH_LONG).show();;
+                        , Toast.LENGTH_LONG).show();
                 handleKeyExchangeMsg(message, sender, context, i);
             }
             else if(SMSTypeDecoder.isEncryptedMessage(message)) {
-                Toast.makeText(context, "received secure text "
-                        , Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "received secure text "
+                  //      , Toast.LENGTH_LONG).show();
                 handleEncryptedMsg(message, sender, context);
                 return true;
             }
@@ -59,8 +59,8 @@ class SMSHandler {
         String[] parts = message.substring(SMSTypeDecoder.PREFIX_SIZE).split(" "); // expected structure of the key
         // exchange message:
         if (parts.length == 2) {
-            String recipientPubModBase64Str = parts[1];
-            String recipientPubExpBase64Str = parts[2];
+            String recipientPubModBase64Str = parts[0];
+            String recipientPubExpBase64Str = parts[1];
 
 
 
@@ -159,10 +159,11 @@ class SMSHandler {
             String messageEncrypted = message.substring(SMSTypeDecoder.PREFIX_SIZE);
             String decrypted = "";
             String symmetricKey = SymmetricEncryptor.getRecipientsSymmetricKey(sender, context);
+
             if(symmetricKey != null)
             {
                 try {
-                    decrypted = EncryptionHelper.decryptBody(messageEncrypted, symmetricKey);
+                    decrypted = EncryptionHelper.decryptBody(messageEncrypted, symmetricKey) + "Waddup";
 
                     Message thisMsg = new Message(sender, "me", decrypted, true);
                     android.os.Message actMessage = android.os.Message.obtain(null, 1);

@@ -142,7 +142,9 @@ class SMSSender {
         // "sending a secure SMS, recipient is "+this.recipientNum+" original message is "+this.message);
         String encrypted;
         String symmetricKey = SymmetricEncryptor.getRecipientsSymmetricKey(this.recipientNum, context);
-        if(symmetricKey != null)
+        Toast.makeText(context, "Ths is the symmetricKey" +symmetricKey
+                , Toast.LENGTH_LONG).show();
+        if(symmetricKey != null && !symmetricKey.isEmpty())
         {
             try {
                 encrypted = EncryptionHelper.encryptBody(message, symmetricKey);

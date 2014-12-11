@@ -91,15 +91,17 @@ public class SymmetricEncryptor{
                 Context.MODE_PRIVATE);
 
         String symmetricKey = prefs.getString(SYMMETRIC_KEY, DEFAULT_PREF);
-        return symmetricKey;
+        byte[] symmetricKeyBytes = Base64.decode(symmetricKey, Base64.NO_WRAP);
+        return new String(symmetricKeyBytes);
     }
 
     public static void saveSymmetricKey(String symmetricKey, Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_MY_KEYS,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = prefs.edit();
-
-        prefsEditor.putString(SYMMETRIC_KEY, symmetricKey);
+        String keyBase64Str = Base64.encodeToString(symmetricKey.getBytes(),
+                Base64.NO_WRAP);
+        prefsEditor.putString(SYMMETRIC_KEY, keyBase64Str);
         prefsEditor.apply();
     }
 
