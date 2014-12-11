@@ -114,7 +114,7 @@ class SMSHandler {
                     String symmetricKey = EncryptionHelper.decryptBody(symmetricKeyEncrypted, recipientPrivateKeySpec);
                     Toast.makeText(context, "OK:Symmetric Key" + symmetricKey
                             , Toast.LENGTH_LONG).show();
-                    SymmetricEncryptor.saveSymmetricKey(sender, symmetricKey,context);
+                    SymmetricEncryptor.saveSymmetricKey( symmetricKey,sender, context);
                 } catch (Exception e) {
                 }
             }
