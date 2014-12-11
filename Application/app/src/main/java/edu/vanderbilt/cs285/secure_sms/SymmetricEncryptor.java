@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -92,7 +93,12 @@ public class SymmetricEncryptor{
 
         String symmetricKey = prefs.getString(SYMMETRIC_KEY, DEFAULT_PREF);
         byte[] symmetricKeyBytes = Base64.decode(symmetricKey, Base64.NO_WRAP);
-        return new String(symmetricKeyBytes);
+        try {
+            return new String(symmetricKeyBytes, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void saveSymmetricKey(String symmetricKey, String contactNum,
@@ -100,8 +106,13 @@ public class SymmetricEncryptor{
         SharedPreferences prefs = context.getSharedPreferences(contactNum,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = prefs.edit();
-        String keyBase64Str = Base64.encodeToString(symmetricKey.getBytes(),
-                Base64.NO_WRAP);
+        String keyBase64Str = null;
+        try {
+            keyBase64Str = Base64.encodeToString(symmetricKey.getBytes("UTF-8"),
+                    Base64.NO_WRAP);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         prefsEditor.putString(SYMMETRIC_KEY, keyBase64Str);
         prefsEditor.apply();
     }
